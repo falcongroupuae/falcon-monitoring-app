@@ -17,6 +17,8 @@ export default function Dashboard() {
     { ID: 2, AgentId: "A002", Department: "HR", EventType: "logout", Browser: "Firefox", URL: "/profile", Title: "Profile", IdleSeconds: 300, TimeStamp: "2025-10-01 12:05:00" },
     { ID: 3, AgentId: "A003", Department: "Sales", EventType: "click", Browser: "Safari", URL: "/reports", Title: "Reports", IdleSeconds: 60, TimeStamp: "2025-10-01 12:10:00" },
     { ID: 4, AgentId: "A004", Department: "Finance", EventType: "view", Browser: "Edge", URL: "/analytics", Title: "Analytics", IdleSeconds: 180, TimeStamp: "2025-10-01 12:15:00" },
+    { ID: 5, AgentId: "A004", Department: "Finance", EventType: "view", Browser: "Edge", URL: "/analytics", Title: "Analytics", IdleSeconds: 180, TimeStamp: "2025-10-01 12:15:00" },
+    { ID: 6, AgentId: "A004", Department: "Finance", EventType: "view", Browser: "Edge", URL: "/analytics", Title: "Analytics", IdleSeconds: 180, TimeStamp: "2025-10-01 12:15:00" },
    
   ];
 
