@@ -1,33 +1,52 @@
 import { Link } from "react-router-dom";
+import notFound from "/src/assets/images/404.jpeg";
 
 export default function NotFound() {
   return (
-    <div className="h-screen w-screen bg-gray-50 flex items-center justify-center">
-      <div className="container flex flex-col md:flex-row items-center justify-center px-5 text-gray-700">
-        <div className="w-full lg:w-1/2 mx-8">
-          <div className="text-9xl text-red-700 font-dark font-extrabold mb-8">
-            {" "}
-            404
-          </div>
-          <p className="text-2xl md:text-3xl font-semibold leading-normal mb-8">
-            Sorry we couldn't find the page you're looking for
-          </p>
-
-          <Link
-            to="/"
-            className="px-6 py-3 bg-red-600 text-white rounded hover:bg-red-700 transition"
+    <>
+      <div className="bg-white">
+        <div className="flex justify-center h-screen">
+          <div
+            className="hidden bg-cover lg:block lg:w-2/3"
+            style={{ backgroundImage: `url(${notFound})` }}
           >
-            Go Back Home
-          </Link>
-        </div>
-        <div className="w-full lg:flex lg:justify-end lg:w-1/2 mx-5 my-12">
-          <img
-            src="https://user-images.githubusercontent.com/43953425/166269493-acd08ccb-4df3-4474-95c7-ad1034d3c070.svg"
-            className=""
-            alt="Page not found"
-          />
+            <div className="flex items-center h-full px-20 bg-black/0">
+              <div>
+                {/* <div className="text-9xl text-white font-dark font-extrabold mb-8">
+                  {" "}
+                  404
+                  <p className="text-2xl md:text-3xl font-semibold leading-normal mb-8">
+                    Sorry we couldn't find the page you're looking for
+                  </p>
+                </div> */}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center w-full max-w-md px-6 mx-auto lg:w-2/6">
+            <div className="flex-1">
+              <div className="text-center">
+                <div className="flex items-center flex-col justify-center">
+                  <img
+                    src="/falcon-logo.png"
+                    alt="Falcon Icon"
+                    className="w-32 object-contain flex-shrink-0"
+                  />
+
+                  <div className="mt-8">
+                    <Link
+                      to="/"
+                      className="px-6 py-3 text-black rounded"
+                    >
+                      Go Back Home
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

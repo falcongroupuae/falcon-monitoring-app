@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import loginBg from "/src/assets/images/login_bg.jpg"
-
+import loginBg from "/src/assets/images/login_bg.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -57,7 +56,13 @@ export default function Login() {
         <div className="flex items-center w-full max-w-md px-6 mx-auto lg:w-2/6">
           <div className="flex-1">
             <div className="text-center">
-              <h2 className="text-4xl font-bold text-gray-700">Falcon Admin</h2>
+              <div className="flex items-center justify-center">
+                <img
+                  src="/falcon-logo.png"
+                  alt="Falcon Icon"
+                  className="w-32 object-contain flex-shrink-0"
+                />
+              </div>
               <p className="mt-3 text-gray-500">
                 Sign in to access your dashboard
               </p>
