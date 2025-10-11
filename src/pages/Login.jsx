@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import loginBg from "/src/assets/images/login_bg.jpg";
+import { FaRegEyeSlash } from "react-icons/fa";
+import { IoEyeOutline } from "react-icons/io5";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     const loggedIn = localStorage.getItem("loggedIn") === "true";
     if (loggedIn) navigate("/", { replace: true });
@@ -16,6 +18,7 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
 
     if (!email || !password) {
       setError("Please enter email and password.");
@@ -95,19 +98,31 @@ export default function Login() {
                     <label htmlFor="password" className="text-sm text-gray-600">
                       Password
                     </label>
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-gray-400 cursor-pointer hover:underline">
                       Forgot password?
                     </span>
                   </div>
-                  <input
-                    type="password"
-                    id="password"
-                    placeholder="Your Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md 
-                      focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40"
-                  />
+
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      placeholder="Your Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md 
+                       focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40 pr-10"
+                    />
+
+                    {/* Toggle Button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3  text-gray-500 hover:text-gray-700 focus:outline-none"
+                    >
+                      {showPassword ? <FaRegEyeSlash /> : <IoEyeOutline />}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Error Message */}
