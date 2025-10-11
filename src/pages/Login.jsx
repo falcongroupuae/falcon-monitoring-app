@@ -8,7 +8,6 @@ export default function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     const loggedIn = localStorage.getItem("loggedIn") === "true";
     if (loggedIn) navigate("/", { replace: true });
@@ -16,6 +15,7 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
 
     if (!email || !password) {
       setError("Please enter email and password.");
