@@ -1,14 +1,28 @@
-
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { FaExpand, FaTimes } from "react-icons/fa";
 import { useState } from "react";
 
-// Pie Chart Component
 export function PieChartCard({ title, data, colors }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const renderLabel = ({ percent }) => `${(percent * 100).toFixed(0)}%`;
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const { name, value, percent } = payload[0].payload;
+      return (
+        <div className="bg-white border border-gray-200 rounded-lg shadow-md px-3 py-2 text-sm">
+          <p className="font-semibold text-gray-800">{name}</p>
+          <p className="text-gray-600">{value} visits</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <>
+      {/* Main Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
@@ -27,16 +41,19 @@ export function PieChartCard({ title, data, colors }) {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={renderLabel}
               outerRadius={100}
               fill="#8884d8"
               dataKey="value"
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                <Cell
+                  key={`cell-${index}`}
+                  fill={colors[index % colors.length]}
+                />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -62,16 +79,19 @@ export function PieChartCard({ title, data, colors }) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={renderLabel}
                     outerRadius={180}
                     fill="#8884d8"
                     dataKey="value"
                   >
                     {data.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={colors[index % colors.length]}
+                      />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
