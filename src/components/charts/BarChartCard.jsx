@@ -10,8 +10,8 @@ export function BarChartCard({ title, data, dataKeys }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 h-auto flex flex-col">
+        <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
           <button
             onClick={() => setIsExpanded(true)}
@@ -21,11 +21,11 @@ export function BarChartCard({ title, data, dataKeys }) {
             <FaExpand className="text-gray-500 hover:text-blue-600 transition-colors" />
           </button>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={400}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey={dataKeys.xAxis} stroke="#6b7280" />
-            <YAxis stroke="#6b7280" />
+            <XAxis dataKey={dataKeys.xAxis} stroke="#000000" />
+            <YAxis stroke="#000000" />
             <Tooltip
               contentStyle={{
                 backgroundColor: "#fff",

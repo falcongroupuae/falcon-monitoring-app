@@ -11,31 +11,39 @@ import {
 
 export function LineChartCard({ title, data, dataKeys }) {
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4">
+    <div className="bg-white shadow-lg rounded-2xl p-5">
       <h2 className="text-xl font-semibold text-gray-700 mb-4">{title}</h2>
-      <div className="w-full h-80">
+      <div className="w-full h-96">
         <ResponsiveContainer>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
+              stroke="#000000"
               dataKey={dataKeys.xAxis}
               tickFormatter={(value) => {
-                // Only show time part (HH:mm)
+                // Format to readable date (e.g. "Oct 9" or "2025-10-09")
                 const date = new Date(value);
-                return date.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
+                if (!isNaN(date)) {
+                  return date.toLocaleDateString([], {
+                    month: "short",
+                    day: "numeric",
+                  });
+                }
+                return value; // fallback in case value is already a string
               }}
             />
-            <YAxis />
+            <YAxis stroke="#000000" />
             <Tooltip
               labelFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
+                if (!isNaN(date)) {
+                  return date.toLocaleDateString([], {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  });
+                }
+                return value;
               }}
             />
             <Legend />
