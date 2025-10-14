@@ -82,7 +82,7 @@ export function PieChartCard({
               </button>
             </div>
             <div className="p-8 flex-1">
-              <ResponsiveContainer width="100%" height={350}>
+              <ResponsiveContainer width="100%" height={500}>
                 <PieChart>
                   <Pie
                     data={data}
@@ -90,7 +90,7 @@ export function PieChartCard({
                     cy="50%"
                     labelLine={false}
                     label={renderLabel}
-                    outerRadius={100}
+                    outerRadius={200}
                     fill="#8884d8"
                     dataKey="value"
                   >
