@@ -2,7 +2,7 @@ export function StatsCard({ title, value, change, icon }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-gray-600">{title}</h3>
+        <h3 className="text-sm font-medium text-gray-700">{title}</h3>
         {change && (
           <span
             className={`text-xs font-semibold px-2 py-1 rounded-full ${
