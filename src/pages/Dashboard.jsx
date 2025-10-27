@@ -6,7 +6,7 @@ import ActivityTrendChart from "../components/dashboard/ActivityTrendChart";
 import SitesPieChart from "../components/dashboard/SitesPieChart";
 import TopAppsTable from "../components/dashboard/TopAppsTable";
 import TopSitesTable from "../components/dashboard/TopSitesTable";
-import IdleTimeChart from "../components/dashboard/IdleTimeChart.JSX";
+import IdleTimeChart from "../components/dashboard/IdleTimeChart";
 
 export default function Dashboard() {
   const [filters, setFilters] = useState({});
