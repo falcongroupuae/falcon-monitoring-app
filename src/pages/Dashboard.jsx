@@ -11,6 +11,7 @@ import UserDailyTable from "../components/dashboard/UserDailyTable";
 import DepartmentSummaryTable from "../components/dashboard/DepartmentSummaryTable";
 import LeastProductiveUsersTable from "../components/dashboard/LeastProductiveUsersTable";
 
+
 export default function Dashboard() {
   const [filters, setFilters] = useState({});
 
