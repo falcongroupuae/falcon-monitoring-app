@@ -20,6 +20,8 @@ export default function SummaryCards({ filters }) {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
+    console.log(" Filters received by SummaryCards:", filters);
+
     fetchSummary();
   }, [filters]);
 
@@ -28,7 +30,26 @@ export default function SummaryCards({ filters }) {
       setLoading(true);
       setHasError(false);
 
-      const res = await getSummary(filters);
+      const buildDateTime = (date, time, fallbackTime) => {
+        if (!date) return null;
+        const finalTime = time ? `${time}:00` : fallbackTime;
+        return `${date}T${finalTime}`;
+      };
+
+      const queryParams = {
+        start_date: buildDateTime(
+          filters.startDate,
+          filters.startTime,
+          "00:00:00"
+        ),
+        end_date: buildDateTime(filters.endDate, filters.endTime, "23:59:59"),
+        department: filters.department || null,
+        agent_code: filters.user || null,
+      };
+
+      console.log("📡 FINAL PARAMS SENT:", queryParams);
+
+      const res = await getSummary(queryParams);
 
       if (!res?.data) throw new Error("Invalid API response");
 
@@ -46,9 +67,7 @@ export default function SummaryCards({ filters }) {
     <FaSpinner className="animate-spin text-gray-500 text-lg" />
   );
 
-  const ErrorIcon = (
-    <FaExclamationTriangle className="text-red-500 text-lg" />
-  );
+  const ErrorIcon = <FaExclamationTriangle className="text-red-500 text-lg" />;
 
   const renderCardValue = (raw) => {
     if (loading) return LoadingIcon;
@@ -64,7 +83,6 @@ export default function SummaryCards({ filters }) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-
       <StatsCard
         title="Total Events"
         value={renderCardValue(summary?.events)}
@@ -100,7 +118,6 @@ export default function SummaryCards({ filters }) {
         value={renderTimeValue(summary?.total_span_seconds)}
         icon={<FaGlobe />}
       />
-
     </div>
   );
 }

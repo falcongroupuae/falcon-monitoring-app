@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import { getTopSites } from "../../api/dashboardApi";
-import AGTable from "../tables/AGTable";
+import { PieChartCard } from "../charts/PieChartCard";
+import { getTopApps } from "../../api/dashboardApi";
 import { toast } from "react-hot-toast";
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
 
-export default function TopSitesTable({ filters }) {
-  const [sites, setSites] = useState([]);
+export default function TopAppsPieChart({ filters }) {
+  const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    fetchSites();
+    fetchApps();
   }, [filters]);
 
-  const fetchSites = async () => {
+  const fetchApps = async () => {
     try {
       setLoading(true);
       setHasError(false);
@@ -36,51 +36,47 @@ export default function TopSitesTable({ filters }) {
         limit: 10,
       };
 
-      console.log("📡 TopSites params:", queryParams);
+      console.log("📡 Top Apps Params:", queryParams);
 
-      const res = await getTopSites(queryParams);
+      const res = await getTopApps(queryParams);
 
       if (!Array.isArray(res.data)) {
         throw new Error("Invalid API response format");
       }
 
-      const mappedData = res.data.map((item) => ({
-        window_title: item.name || "Unknown",
-        count: item.count ?? 0,
+      const chartData = res.data.map((item) => ({
+        name: item.name,
+        value: item.count,
       }));
 
-      setSites(mappedData);
+      setApps(chartData);
     } catch (err) {
       console.error(err);
       setHasError(true);
-      toast.error("Failed to load top sites");
-      setSites([]);
+      toast.error("Failed to load top apps chart");
     } finally {
       setLoading(false);
     }
   };
 
-  const LoadingRow = [
-    {
-      window_title: <FaSpinner className="animate-spin text-gray-500" />,
-      count: "...",
-    },
-  ];
+  // Loading view inside card
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-56 bg-white rounded-xl shadow border">
+        <FaSpinner className="animate-spin text-gray-500 text-2xl" />
+      </div>
+    );
+  }
 
-  const ErrorRow = [
-    {
-      window_title: <FaExclamationTriangle className="text-red-500" />,
-      count: "Error",
-    },
-  ];
+  // Error view inside card
+  if (hasError) {
+    return (
+      <div className="flex items-center justify-center bg-white rounded-xl shadow border text-red-500 gap-2">
+        <FaExclamationTriangle className="text-xl" />
+        <span>Error loading top apps</span>
+      </div>
+    );
+  }
 
-  const finalData = loading ? LoadingRow : hasError ? ErrorRow : sites;
-
-  return (
-    <AGTable
-      title="Top Sites / Active Windows"
-      columns={["window_title", "count"]}
-      data={finalData}
-    />
-  );
+  return <PieChartCard title="Top Apps Usage" data={apps} />;
 }

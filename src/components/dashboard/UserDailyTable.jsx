@@ -19,15 +19,34 @@ export default function UserDailyTable({ filters }) {
       setLoading(true);
       setHasError(false);
 
-      const res = await getUserDaily(filters);
+      const buildDateTime = (date, time, fallbackTime) => {
+        if (!date) return null;
+        const finalTime = time ? `${time}:00` : fallbackTime;
+        return `${date}T${finalTime}`;
+      };
+
+      const queryParams = {
+        start_date: buildDateTime(
+          filters.startDate,
+          filters.startTime,
+          "00:00:00"
+        ),
+        end_date: buildDateTime(filters.endDate, filters.endTime, "23:59:59"),
+        department: filters.department || null,
+        agent_code: filters.user || null,
+      };
+
+      console.log("📡 UserDaily params:", queryParams);
+
+      const res = await getUserDaily(queryParams);
 
       if (!Array.isArray(res.data)) {
         throw new Error("Invalid API response format");
       }
 
-      // Map API → table format
       const mapped = res.data.map((item) => ({
         agent_id: item.agent_id,
+        name: item.name,
         day: item.day,
         events: item.events,
         active: formatDuration(item.active_seconds),
@@ -48,18 +67,18 @@ export default function UserDailyTable({ filters }) {
   // Loading row
   const LoadingRow = [
     {
-      agent_id: <FaSpinner className="animate-spin text-gray-500" />,
-      day: "...",
-      events: "...",
-      active: "...",
-      idle: "...",
+      name: <FaSpinner className="animate-spin text-gray-500" />,
+      day: <FaSpinner className="animate-spin text-gray-500" />,
+      events: <FaSpinner className="animate-spin text-gray-500" />,
+      active: <FaSpinner className="animate-spin text-gray-500" />,
+      idle: <FaSpinner className="animate-spin text-gray-500" />,
     },
   ];
 
   // Error row
   const ErrorRow = [
     {
-      agent_id: <FaExclamationTriangle className="text-red-500" />,
+      name: <FaExclamationTriangle className="text-red-500" />,
       day: "Error",
       events: "-",
       active: "-",
@@ -72,7 +91,7 @@ export default function UserDailyTable({ filters }) {
   return (
     <AGTable
       title="User Daily Activity"
-      columns={["agent_id", "day", "events", "active", "idle"]}
+      columns={["name", "day", "events", "active", "idle"]}
       data={finalData}
     />
   );
