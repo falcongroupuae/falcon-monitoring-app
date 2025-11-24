@@ -18,7 +18,3 @@ export const getDepartmentSummary = (params) =>
 export const getLeastProductiveUsers = (params) =>
   axiosInstance.get("/stats/least-productive-users", { params });
 
-
-export const getAgentSummary = () => axiosInstance.get("/agent-summary");
-export const getIdleTime = () => axiosInstance.get("/idle-time");
-export const getActivityTrend = () => axiosInstance.get("/activity-trend");
