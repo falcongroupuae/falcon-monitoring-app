@@ -2,7 +2,7 @@ import axios from "axios";
 import { delay } from "../utils/delay";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.1.205:8090/stats",
+  baseURL: "http://192.168.1.205:8090",
   headers: {
     "Content-Type": "application/json",
   },
@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   async (response) => {
     if (import.meta.env.DEV) {
-      await delay(1000); 
+      await delay(1000);
     }
     return response;
   },

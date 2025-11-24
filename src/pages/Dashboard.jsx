@@ -1,15 +1,11 @@
 import { useState } from "react";
 import Filter from "../components/common/Filter";
 import SummaryCards from "../components/dashboard/SummaryCards";
-// import AgentSummaryTable from "../components/dashboard/AgentSummaryTable";
-// import ActivityTrendChart from "../components/dashboard/ActivityTrendChart";
-import SitesPieChart from "../components/dashboard/SitesPieChart";
-import TopAppsTable from "../components/dashboard/TopAppsTable";
-// import TopSitesTable from "../components/dashboard/TopSitesTable";
-// import IdleTimeChart from "../components/dashboard/IdleTimeChart.JSX";
+import TopSitesTable from "../components/dashboard/TopSitesTable";
 import UserDailyTable from "../components/dashboard/UserDailyTable";
 import DepartmentSummaryTable from "../components/dashboard/DepartmentSummaryTable";
 import LeastProductiveUsersTable from "../components/dashboard/LeastProductiveUsersTable";
+import TopAppsPieChart from "../components/dashboard/TopAppsPieChart";
 
 
 export default function Dashboard() {
@@ -20,7 +16,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 max-h-screen">
+ <div className="p-6 bg-gray-50">
       <h1 className="text-3xl font-bold text-gray-800 mb-4">Dashboard</h1>
 
       <Filter onApply={handleApplyFilters} />
@@ -28,8 +24,8 @@ export default function Dashboard() {
       <SummaryCards filters={filters} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <TopAppsTable filters={filters} />
-        <SitesPieChart filters={filters} />
+        <TopSitesTable filters={filters} />
+        <TopAppsPieChart filters={filters} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -39,11 +35,6 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
         <LeastProductiveUsersTable filters={filters} />
       </div>
-
-      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <ActivityTrendChart filters={filters} />
-        <IdleTimeChart />
-      </div> */}
     </div>
   );
 }

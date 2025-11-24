@@ -19,20 +19,36 @@ export default function LeastProductiveUsersTable({ filters }) {
       setLoading(true);
       setHasError(false);
 
-      const limit = filters?.limit || 10;
-      const res = await getLeastProductiveUsers(limit);
+      const buildDateTime = (date, time, fallbackTime) => {
+        if (!date) return null;
+        const finalTime = time ? `${time}:00` : fallbackTime;
+        return `${date}T${finalTime}`;
+      };
+
+      const queryParams = {
+        start_date: buildDateTime(
+          filters.startDate,
+          filters.startTime,
+          "00:00:00"
+        ),
+        end_date: buildDateTime(filters.endDate, filters.endTime, "23:59:59"),
+        department: filters.department || null,
+        agent_code: filters.user || null,
+        limit: 10,
+      };
+
+      console.log("📡 LeastProductive params:", queryParams);
+
+      const res = await getLeastProductiveUsers(queryParams);
 
       if (!Array.isArray(res.data)) throw new Error("Invalid API response");
 
-      // Sort by idle_ratio DESC
-      const sorted = [...res.data].sort(
-        (a, b) => b.idle_ratio - a.idle_ratio
-      );
+      // Sort by idle ratio DESC
+      const sorted = [...res.data].sort((a, b) => b.idle_ratio - a.idle_ratio);
 
-      // Map for the table
       const mapped = sorted.map((item, index) => ({
         rank: index + 1,
-        agent_id: item.agent_id,
+        name: item.name,
         events: item.events,
         active: formatDuration(item.active_seconds),
         idle: formatDuration(item.idle_seconds),
@@ -53,7 +69,7 @@ export default function LeastProductiveUsersTable({ filters }) {
   const LoadingRow = [
     {
       rank: <FaSpinner className="animate-spin text-gray-500" />,
-      agent_id: "...",
+      name: "...",
       events: "...",
       active: "...",
       idle: "...",
@@ -64,7 +80,7 @@ export default function LeastProductiveUsersTable({ filters }) {
   const ErrorRow = [
     {
       rank: <FaExclamationTriangle className="text-red-500" />,
-      agent_id: "Error",
+      name: "Error",
       events: "-",
       active: "-",
       idle: "-",
@@ -77,7 +93,7 @@ export default function LeastProductiveUsersTable({ filters }) {
   return (
     <AGTable
       title="Least Productive Users"
-      columns={["rank", "agent_id", "events", "active", "idle", "idle_ratio"]}
+      columns={["rank", "name", "events", "active", "idle", "idle_ratio"]}
       data={finalRows}
     />
   );
