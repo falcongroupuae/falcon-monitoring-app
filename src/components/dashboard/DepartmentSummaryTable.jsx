@@ -19,9 +19,30 @@ export default function DepartmentSummaryTable({ filters }) {
       setLoading(true);
       setHasError(false);
 
-      const res = await getDepartmentSummary(filters);
+      const buildDateTime = (date, time, fallbackTime) => {
+        if (!date) return null;
+        const finalTime = time ? `${time}:00` : fallbackTime;
+        return `${date}T${finalTime}`;
+      };
 
-      if (!Array.isArray(res.data)) throw new Error("Invalid API response");
+      const queryParams = {
+        start_date: buildDateTime(
+          filters.startDate,
+          filters.startTime,
+          "00:00:00"
+        ),
+        end_date: buildDateTime(filters.endDate, filters.endTime, "23:59:59"),
+        department: filters.department || null,
+        agent_code: filters.user || null,
+      };
+
+      console.log("Department Summary params:", queryParams);
+
+      const res = await getDepartmentSummary(queryParams);
+
+      if (!Array.isArray(res.data)) {
+        throw new Error("Invalid API response");
+      }
 
       const mapped = res.data.map((item) => ({
         department: item.department,
