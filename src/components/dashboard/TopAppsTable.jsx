@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { getTopApps } from "../../api/dashboardApi";
 import AGTable from "../tables/AGTable";
+import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
+import { toast } from "react-hot-toast";
 
 export default function TopAppsTable({ filters }) {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     fetchApps();
@@ -14,24 +16,55 @@ export default function TopAppsTable({ filters }) {
   const fetchApps = async () => {
     try {
       setLoading(true);
-      const res = await getTopApps(filters.limit || 10);
-      const mappedData = (res.data.apps || []).map((app) => ({
-        application: app.application,
-        uses: app.uses,
-        total_time_spent: app.total_time_spent ?? "N/A",
+      setHasError(false);
+
+      const limit = filters?.limit || 10;
+
+      const res = await getTopApps(limit);
+
+      if (!Array.isArray(res.data)) {
+        throw new Error("Invalid API response");
+      }
+
+      const mappedData = res.data.map((item) => ({
+        application: item.name || "Unknown",
+        uses: item.count ?? 0,
       }));
+
       setApps(mappedData);
-      setError(null);
     } catch (err) {
       console.error(err);
-      setError("Failed to load top apps");
+      setHasError(true);
+      toast.error("Failed to load top apps");
+      setApps([]); // required to trigger error row
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div>Loading top apps...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  // UI rows
+  const LoadingRow = [
+    {
+      application: <FaSpinner className="animate-spin text-gray-500" />,
+      uses: "...",
+    },
+  ];
 
-  return <AGTable title="Top Apps" columns={["application", "uses", "total_time_spent"]} data={apps} />;
+  const ErrorRow = [
+    {
+      application: <FaExclamationTriangle className="text-red-500" />,
+      uses: "Error",
+    },
+  ];
+
+  // Final dataset that table will render
+  const finalData = loading ? LoadingRow : hasError ? ErrorRow : apps;
+
+  return (
+    <AGTable
+      title="Top Applications"
+      columns={["application", "uses"]}
+      data={finalData}
+    />
+  );
 }

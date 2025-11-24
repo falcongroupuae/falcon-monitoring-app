@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { PieChartCard } from "../charts/PieChartCard";
 import { getTopSites } from "../../api/dashboardApi";
+import { toast } from "react-hot-toast";
 
 export default function SitesPieChart({ filters }) {
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     fetchSites();
@@ -14,32 +15,34 @@ export default function SitesPieChart({ filters }) {
   const fetchSites = async () => {
     try {
       setLoading(true);
+      setHasError(false);
+
       const res = await getTopSites(filters.limit || 10);
 
-      // Transform API response for chart
-      const chartData = (res.data.sites || []).map((s) => ({
-        name: s.domain,
-        value: s.visits,
+      if (!Array.isArray(res.data)) throw new Error("Invalid API response");
+
+      const chartData = res.data.map((item) => ({
+        name: item.name || "Unknown",
+        value: item.count ?? 0,
       }));
 
       setSites(chartData);
-      setError(null);
     } catch (err) {
       console.error(err);
-      setError("Failed to load sites");
+      setHasError(true);
+      toast.error("Failed to load site chart");
+      setSites([]); // important: empty data → PieCard will show error view
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div>Loading sites...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
-
   return (
     <PieChartCard
       title="Sites Visits Distribution"
       data={sites}
-      colors={["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#F472B6"]}
+      loading={loading}
+      error={hasError}
     />
   );
 }
