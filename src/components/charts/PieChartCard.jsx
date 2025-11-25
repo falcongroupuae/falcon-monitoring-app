@@ -80,7 +80,7 @@ export function PieChartCard({
 
         {/* PIE CHART (Dashboard) */}
         <div className="flex-1 flex items-center justify-center">
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer width="100%" height={500}>
             <PieChart>
               <Pie
                 data={data}

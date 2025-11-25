@@ -1,10 +1,1 @@
 @import "tailwindcss";
-.ag-theme-myCustom {
-  --ag-background-color: #ffffff;
-  --ag-foreground-color: #000000;
-  --ag-header-background-color: #F9FAFB;
-  --ag-row-odd-background-color: #F9FAFB;
-  --ag-border-color: #00000026;
-  --ag-font-family: Arial, sans-serif;
-  border-radius: 0;
-}

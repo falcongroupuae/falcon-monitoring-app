@@ -7,9 +7,9 @@ const menuItems = [
   { name: "Dashboard", icon: <MdSpaceDashboard />, path: "/" },
   { name: "Statistics", icon: <FaChartBar />, path: "/statistics" },
   { name: "Users", icon: <FaUsers />, path: "/users" },
-  { name: "Company", icon: <FaBuilding />, path: "/company" },
+  // { name: "Company", icon: <FaBuilding />, path: "/company" },
   { name: "Reports", icon: <FaFileAlt />, path: "/reports" },
-  { name: "Activity", icon: <FaHistory />, path: "/activity" },
+  // { name: "Activity", icon: <FaHistory />, path: "/activity" },
 ];
 
 export default function Sidebar({ collapsed }) {

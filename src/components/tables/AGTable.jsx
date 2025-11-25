@@ -28,30 +28,48 @@ const themeConfig = themeQuartz.withPart(iconSetQuartzBold).withParams({
   headerVerticalPaddingScale: 1.2,
   oddRowBackgroundColor: "#F9FAFB",
   rowBorder: true,
-  sidePanelBorder: false,
-  wrapperPadding: 0,
-  wrapperMargin: 0,
   spacing: 0,
   wrapperBorder: false,
-  wrapperBorderRadius: 5,
+  wrapperBorderRadius: 0,
 });
 
-export default function ModernAGTable({ title, columns, data }) {
+export default function ModernAGTable({ title, columns, data, onRowClick }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const columnDefs = useMemo(
-    () =>
-      columns.map((col) => ({
-        headerName: col.charAt(0).toUpperCase() + col.slice(1),
-        field: col,
-        sortable: true,
-        filter: true,
-        resizable: true,
-        flex: 1,
-        minWidth: 120,
-      })),
-    [columns]
-  );
+  // ⭐ FIXED: now supports both string + object columns
+  const columnDefs = useMemo(() => {
+    return columns.map((col) => {
+      // Case 1: string column ("name", "department")
+      if (typeof col === "string") {
+        return {
+          headerName: col.charAt(0).toUpperCase() + col.slice(1),
+          field: col,
+          sortable: true,
+          filter: true,
+          resizable: true,
+          flex: 1,
+          minWidth: 120,
+        };
+      }
+
+      // Case 2: object column
+      return {
+        headerName:
+          col.headerName ||
+          col.field.charAt(0).toUpperCase() + col.field.slice(1),
+
+        field: col.field,
+        sortable: col.sortable ?? true,
+        filter: col.filter ?? true,
+        resizable: col.resizable ?? true,
+        flex: col.flex ?? 1,
+        minWidth: col.minWidth ?? 120,
+
+        // ⭐ IMPORTANT: Keep your custom renderer
+        cellRenderer: col.cellRenderer,
+      };
+    });
+  }, [columns]);
 
   const defaultColDef = useMemo(
     () => ({
@@ -65,7 +83,6 @@ export default function ModernAGTable({ title, columns, data }) {
 
   return (
     <>
-      {/* MAIN CARD */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col">
         <div className="px-6 py-4 bg-gray-50 rounded-t-2xl flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
@@ -77,33 +94,33 @@ export default function ModernAGTable({ title, columns, data }) {
           </button>
         </div>
 
-        {/* FIXED table wrapper */}
-        <div className="w-full h-[500px] relative rounded-b-2xl flex-none shadow-lg overflow-hidden">
+        <div className="w-full h-[550px] relative rounded-b-2xl flex-none shadow-lg overflow-hidden">
           <AgGridReact
             rowData={data}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
+            rowHeight={70}
+            headerHeight={40}
             pagination={true}
             paginationPageSize={10}
             paginationPageSizeSelector={[10, 20, 50]}
             theme={themeConfig.theme}
             themeOverrides={themeConfig.overrides}
+            onRowClicked={(e) => {
+              if (onRowClick) onRowClick(e.data);
+            }}
           />
         </div>
       </div>
 
-      {/* EXPANDED MODAL */}
       {isExpanded && (
         <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col animate-in">
-            {/* Modal Header */}
             <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center rounded-t-2xl">
               <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
 
-              {/* Close button FIXED */}
               <button
                 onClick={() => {
-                  console.log("CLOSE CLICKED");
                   setIsExpanded(false);
                 }}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -112,17 +129,21 @@ export default function ModernAGTable({ title, columns, data }) {
               </button>
             </div>
 
-            {/* Modal Table */}
             <div className="w-full h-full p-6" style={{ height: "70vh" }}>
               <AgGridReact
                 rowData={data}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
+                rowHeight={80}
+                headerHeight={40}
                 pagination={true}
                 paginationPageSize={20}
                 paginationPageSizeSelector={[20, 50, 100]}
                 theme={themeConfig.theme}
                 themeOverrides={themeConfig.overrides}
+                onRowClicked={(e) => {
+                  if (onRowClick) onRowClick(e.data);
+                }}
               />
             </div>
           </div>

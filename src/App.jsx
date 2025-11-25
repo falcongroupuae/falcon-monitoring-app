@@ -18,6 +18,7 @@ import Activity from "./pages/Activity";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Login";
+import UserDetail from "./pages/UserDetail";
 
 function AppLayout({
   children,
@@ -91,13 +92,21 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/users/:agent_code"
+          element={
+            <ProtectedRoute>
+              <UserDetail />
+            </ProtectedRoute>
+          }
+        />
+        {/* <Route
           path="/company"
           element={
             <ProtectedRoute>
               <Company />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/reports"
           element={
@@ -106,14 +115,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/activity"
           element={
             <ProtectedRoute>
               <Activity />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
     </AppLayout>
