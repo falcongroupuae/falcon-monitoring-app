@@ -27,10 +27,15 @@ function AppLayout({
 }) {
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+      />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onToggleSidebar={toggleSidebar} />
-        <main className="flex-1 bg-gray-50 overflow-auto">{children}</main>
+        <main className="flex-1 bg-gray-50  overflow-auto flex flex-col">
+          {children}
+        </main>
       </div>
     </div>
   );

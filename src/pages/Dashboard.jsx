@@ -7,7 +7,6 @@ import DepartmentSummaryTable from "../components/dashboard/DepartmentSummaryTab
 import LeastProductiveUsersTable from "../components/dashboard/LeastProductiveUsersTable";
 import TopAppsPieChart from "../components/dashboard/TopAppsPieChart";
 
-
 export default function Dashboard() {
   const [filters, setFilters] = useState({});
 
@@ -16,23 +15,24 @@ export default function Dashboard() {
   };
 
   return (
- <div className="p-6 bg-gray-50">
+    <div className="p-5 bg-gray-50 min-h-0 flex flex-col">
       <h1 className="text-3xl font-bold text-gray-800 mb-4">Dashboard</h1>
 
       <Filter onApply={handleApplyFilters} />
 
       <SummaryCards filters={filters} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 auto-rows-max">
         <TopSitesTable filters={filters} />
+
         <TopAppsPieChart filters={filters} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 auto-rows-max">
         <UserDailyTable filters={filters} />
         <DepartmentSummaryTable filters={filters} />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8 auto-rows-max">
         <LeastProductiveUsersTable filters={filters} />
       </div>
     </div>
