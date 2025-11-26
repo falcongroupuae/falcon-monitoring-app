@@ -8,6 +8,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { formatDuration } from "../../utils/formatDuration";
 
 export function LineChartCard({ title, data, dataKeys }) {
   return (
@@ -21,7 +22,6 @@ export function LineChartCard({ title, data, dataKeys }) {
               stroke="#000000"
               dataKey={dataKeys.xAxis}
               tickFormatter={(value) => {
-                // Format to readable date (e.g. "Oct 9" or "2025-10-09")
                 const date = new Date(value);
                 if (!isNaN(date)) {
                   return date.toLocaleDateString([], {
@@ -29,11 +29,17 @@ export function LineChartCard({ title, data, dataKeys }) {
                     day: "numeric",
                   });
                 }
-                return value; // fallback in case value is already a string
+                return value;
               }}
             />
-            <YAxis stroke="#000000" />
+
+            <YAxis
+              stroke="#000000"
+              tickFormatter={(value) => formatDuration(value)}
+            />
+
             <Tooltip
+              formatter={(value, key) => [formatDuration(value), key]}
               labelFormatter={(value) => {
                 const date = new Date(value);
                 if (!isNaN(date)) {

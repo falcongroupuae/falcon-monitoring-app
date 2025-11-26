@@ -92,7 +92,7 @@ export function PieChartCard({
                 dataKey="value"
               >
                 {data.map((entry, i) => (
-                  <Cell key={i} fill={colors[i]} />
+                  <Cell key={i} fill={entry.color || colors[i]} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
@@ -128,7 +128,7 @@ export function PieChartCard({
                     labelLine={false}
                   >
                     {data.map((entry, i) => (
-                      <Cell key={i} fill={colors[i]} />
+                     <Cell key={i} fill={entry.color || colors[i]} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />

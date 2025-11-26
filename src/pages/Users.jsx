@@ -14,7 +14,7 @@ export default function Users() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Users</h1>
-            <Filter onApply={handleApplyFilters} />
+      <Filter onApply={handleApplyFilters} />
 
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8 auto-rows-max">
         <UsersTable filters={filters} />

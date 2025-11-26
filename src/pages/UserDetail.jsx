@@ -3,9 +3,16 @@ import { useParams } from "react-router-dom";
 
 import { getUserOverview } from "../api/usersApi";
 import { formatDuration } from "../utils/formatDuration";
+import { getUserProductivity } from "../api/usersApi";
 
-import MiniPieChart from "../components/charts/MiniPieChart";
+import DonutChart from "../components/charts/DonutChart";
+import { PieChartCard } from "../components/charts/PieChartCard";
+import { BarChartCard } from "../components/charts/BarChartCard";
+import { LineChartCard } from "../components/charts/LineChartCard";
+import ProductivityProgressBar from "../components/users/ProductivityProgressBar";
+
 import ModernAGTable from "../components/tables/AGTable";
+import { StackedBarChartCard } from "../components/charts/StackedBarChartCard";
 
 export default function UserDetail() {
   const { agent_code } = useParams();
@@ -13,9 +20,12 @@ export default function UserDetail() {
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [productivity, setProductivity] = useState(null);
+  const [loadingProd, setLoadingProd] = useState(true);
 
   useEffect(() => {
     loadUser();
+    loadProductivity();
   }, [agent_code]);
 
   const loadUser = async () => {
@@ -33,17 +43,83 @@ export default function UserDetail() {
     }
   };
 
-  if (loading)
-    return <div className="p-6 text-gray-500">Loading user overview…</div>;
+  const loadProductivity = async () => {
+    try {
+      setLoadingProd(true);
+      const res = await getUserProductivity(agent_code);
+      setProductivity(res.data);
+    } catch (err) {
+      console.error("Productivity error:", err);
+    } finally {
+      setLoadingProd(false);
+    }
+  };
+
+  if (loading) return <div className="p-6 text-gray-500">Loading…</div>;
 
   if (error || !overview)
-    return (
-      <div className="p-6 text-red-500">
-        Failed to load user details. Please try again.
-      </div>
-    );
+    return <div className="p-6 text-red-500">Failed to load user details.</div>;
 
   const k = overview.kpis;
+
+  const donutData = productivity
+    ? [
+        {
+          label: "Productive",
+          value: productivity.productive_seconds,
+          color: "#10B981",
+        },
+        {
+          label: "Unproductive",
+          value: productivity.unproductive_seconds,
+          color: "#EF4444",
+        },
+        {
+          label: "Neutral",
+          value: productivity.neutral_seconds || 1,
+          color: "#9CA3AF",
+        },
+      ]
+    : [];
+
+  const progressData = productivity
+    ? {
+        productive: productivity.productive_seconds,
+        unproductive: productivity.unproductive_seconds,
+        neutral: productivity.neutral_seconds,
+      }
+    : null;
+
+  const productivityPieData = [
+    { name: "Active", value: k.total_active_seconds, color: "#10B981" },
+    { name: "Idle", value: k.total_idle_seconds, color: "#EF4444" },
+  ];
+
+  const topAppsBarData = overview.top_apps.map((a) => ({
+    name: a.name,
+    count: a.count,
+  }));
+
+  const topSitesBarData = overview.top_sites.map((s) => ({
+    name: s.name,
+    count: s.count,
+  }));
+
+  const topAppsPieData = overview.top_apps.map((a) => ({
+    name: a.name,
+    value: a.count,
+  }));
+
+  const topSitesPieData = overview.top_sites.map((s) => ({
+    name: s.name,
+    value: s.count,
+  }));
+
+  const dailyLineData = overview.daily_activity.map((d) => ({
+    day: d.day,
+    active: d.active_seconds,
+    idle: d.idle_seconds,
+  }));
 
   return (
     <div className="p-6 space-y-10">
@@ -55,50 +131,74 @@ export default function UserDetail() {
         </p>
       </div>
 
-      {/* KPIs */}
+      {/* KPI CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         <KPI title="Total Events" value={k.total_events} />
-        <KPI title="Active Time" value={formatDuration(k.total_active_seconds)} />
+        <KPI
+          title="Active Time"
+          value={formatDuration(k.total_active_seconds)}
+        />
         <KPI title="Idle Time" value={formatDuration(k.total_idle_seconds)} />
         <KPI title="Productivity Ratio" value={`${k.productivity_ratio}%`} />
       </div>
 
-      {/* Productivity Pie */}
-      <div className="bg-white shadow rounded-xl p-6 w-[320px]">
-        <h2 className="text-xl font-semibold mb-4">Productivity Breakdown</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ProductivityProgressBar data={progressData} />
+        <DonutChart title="Productivity Breakdown" data={donutData} />
+      </div>
 
-        <MiniPieChart
-          data={[
-            { label: "Productive", value: k.total_active_seconds },
-            { label: "Idle", value: k.total_idle_seconds },
-            { label: "Neutral", value: 1 }, // fallback to avoid all-zero pie
-          ]}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PieChartCard title="Top Applications" data={topAppsPieData} />
+        <BarChartCard
+          title="Most Used Applications"
+          data={topAppsBarData}
+          dataKeys={{
+            xAxis: "name",
+            bars: ["count"],
+          }}
         />
       </div>
 
-      {/* Top Apps */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PieChartCard title="Top Sites" data={topSitesPieData} />
+        <BarChartCard
+          title="Most Visited Sites"
+          data={topSitesBarData}
+          dataKeys={{
+            xAxis: "name",
+            bars: ["count"],
+          }}
+        />
+      </div>
+
+      <div className="grid grid-cols-1  lg:grid-cols-2 gap-6">
+        <LineChartCard
+          title="Daily Activity Trend"
+          data={dailyLineData}
+          dataKeys={{
+            xAxis: "day",
+            lines: ["active", "idle"],
+          }}
+        />
+        <StackedBarChartCard title="Daily Activity Stacked Bar" data={dailyLineData} />
+
+      </div>
+
       <ModernAGTable
         title="Top Applications"
         columns={["name", "count"]}
         data={overview.top_apps}
       />
 
-      {/* Top Sites */}
       <ModernAGTable
         title="Top Sites"
         columns={["name", "count"]}
         data={overview.top_sites}
       />
 
-      {/* Daily Activity */}
       <ModernAGTable
         title="Daily Activity"
-        columns={[
-          "day",
-          "events",
-          "active_seconds",
-          "idle_seconds",
-        ]}
+        columns={["day", "events", "active_seconds", "idle_seconds"]}
         data={overview.daily_activity.map((d) => ({
           ...d,
           active_seconds: formatDuration(d.active_seconds),
