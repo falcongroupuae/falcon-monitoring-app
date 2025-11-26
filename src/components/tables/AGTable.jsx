@@ -94,7 +94,7 @@ export default function ModernAGTable({ title, columns, data, onRowClick }) {
           </button>
         </div>
 
-        <div className="w-full h-[550px] relative rounded-b-2xl flex-none shadow-lg overflow-hidden">
+        <div className="w-full h-[800px] relative rounded-b-2xl flex-none shadow-lg overflow-hidden">
           <AgGridReact
             rowData={data}
             columnDefs={columnDefs}

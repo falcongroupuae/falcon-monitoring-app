@@ -1,22 +1,65 @@
-import React from 'react'
+import { useState } from "react";
+import { toast } from "react-hot-toast";
 
-function Reports() {
+import ReportFilters from "../components/reports/ReportFilters";
+import { exportCSV } from "../api/reportsApi";
+
+export default function Reports() {
+  const [loading, setLoading] = useState(false);
+
+  const handleExport = async (filters) => {
+    try {
+      setLoading(true);
+
+      const res = await exportCSV(filters);
+
+      if (!res.data) {
+        toast.error("No data received");
+        return;
+      }
+
+      const blob = new Blob([res.data], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+
+      const fileName = `${filters.report}_${Date.now()}.csv`;
+      link.setAttribute("download", fileName);
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success("CSV downloaded successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Export failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-<div className="bg-gray-100 dark:bg-gray-800">
-    <div className="min-h-screen flex items-center justify-center">
-        <div className="max-w-2xl w-full px-4">
-            <h1 className="text-4xl font-bold text-center mb-8 text-gray-900 dark:text-white">Coming Soon!</h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 text-center mb-12">Our website is under construction. We'll be back soon!
-            </p>
-            <form className="flex flex-col md:flex-row justify-center items-center gap-4">
-                <input className="w-full md:w-80  py-2 px-4 border text-gray-800 dark:text-white border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700" type="email" placeholder="Enter your email address"/>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 border dark:bg-blue-800">Notify Me</button>
-            </form>
-        </div>
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold text-gray-800">Reports</h1>
+
+      <ReportFilters onApply={handleExport} />
+
+      <div>
+        <button
+          disabled={loading}
+          onClick={() =>
+            toast(
+              "Choose your filters then click Export",
+              { icon: "ℹ️" }
+            )
+          }
+          className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 disabled:bg-gray-400"
+        >
+          {loading ? "Exporting..." : "Export CSV"}
+        </button>
+      </div>
     </div>
-</div>
-
-  )
+  );
 }
-
-export default Reports
