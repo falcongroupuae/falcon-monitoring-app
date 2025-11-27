@@ -9,7 +9,8 @@ import {
   FaCalendarAlt,
 } from "react-icons/fa";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { getMetaDepartments } from "../../api/commonApi"; // <-- your API
+
+import { getMetaDepartments, getMetaUsers } from "../../api/commonApi";
 
 export default function ReportFilters({ onApply }) {
   const [filters, setFilters] = useState({
@@ -21,7 +22,9 @@ export default function ReportFilters({ onApply }) {
   });
 
   const [departments, setDepartments] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loadingDeps, setLoadingDeps] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const reportOptions = [
     { label: "Events", value: "events" },
@@ -33,9 +36,7 @@ export default function ReportFilters({ onApply }) {
     { label: "User Overview", value: "user-overview" },
   ];
 
-  /* ---------------------------------------------------
-   * Load Departments dynamically from /meta/departments
-   * --------------------------------------------------- */
+  /* ---------------- LOAD DEPARTMENTS ---------------- */
   useEffect(() => {
     loadDepartments();
   }, [filters.start_date, filters.end_date]);
@@ -44,10 +45,10 @@ export default function ReportFilters({ onApply }) {
     try {
       setLoadingDeps(true);
 
-      const start_dt = filters.start_date || null;
-      const end_dt = filters.end_date || null;
-
-      const res = await getMetaDepartments({ start_dt, end_dt });
+      const res = await getMetaDepartments({
+        start_dt: filters.start_date || null,
+        end_dt: filters.end_date || null,
+      });
 
       setDepartments(res.data || []);
     } catch (err) {
@@ -58,7 +59,47 @@ export default function ReportFilters({ onApply }) {
     }
   };
 
-  /* ---------------------- Dropdown ---------------------- */
+  /* ---------------- LOAD USERS BY DEPARTMENT ---------------- */
+  useEffect(() => {
+    loadUsers();
+  }, [filters.department]);
+
+  const loadUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const res = await getMetaUsers({
+        department: filters.department || null,
+      });
+      setUsers(res.data || []);
+    } catch (err) {
+      console.error("Failed to load users:", err);
+      setUsers([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  /* ---------------- AUTO-SET DEPARTMENT FROM USER ---------------- */
+  useEffect(() => {
+    if (!filters.agent_code || users.length === 0) return;
+
+    const selectedUser = users.find(
+      (u) => u.agent_code === filters.agent_code
+    );
+
+    if (
+      selectedUser &&
+      selectedUser.department &&
+      selectedUser.department !== filters.department
+    ) {
+      setFilters((prev) => ({
+        ...prev,
+        department: selectedUser.department,
+      }));
+    }
+  }, [filters.agent_code, users]);
+
+  /* ---------------- DROPDOWN COMPONENT ---------------- */
   const Dropdown = ({ label, icon, options, value, onChange }) => (
     <div className="w-full md:w-64">
       <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -67,33 +108,23 @@ export default function ReportFilters({ onApply }) {
 
       <Listbox value={value} onChange={onChange}>
         <div className="relative">
-          <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-gray-50 hover:bg-gray-100 py-2.5 pl-11 pr-10 text-left text-sm border border-gray-300 text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">
+          <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-gray-50 hover:bg-gray-100 py-2.5 pl-11 pr-10 text-left text-sm border border-gray-300 text-gray-700 shadow-sm">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               {icon}
             </span>
-
             <span className="block truncate">
               {options.find((o) => o.value === value)?.label || "Select"}
             </span>
-
             <ChevronUpDownIcon className="absolute right-3 top-1/2 h-5 w-5 text-gray-400 -translate-y-1/2" />
           </Listbox.Button>
 
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-150"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
-          >
-            <Listbox.Options className="absolute z-20 mt-2 w-full max-h-60 overflow-auto rounded-xl bg-white py-2 shadow-xl ring-1 ring-black/5 text-sm">
+          <Transition as={Fragment}>
+            <Listbox.Options className="absolute z-20 mt-2 w-full max-h-60 overflow-auto bg-white rounded-xl shadow-xl">
               {options.map((opt) => (
                 <Listbox.Option key={opt.value} value={opt.value}>
                   {({ selected }) => (
                     <div
-                      className={`cursor-pointer select-none px-4 py-2 rounded-lg ${
+                      className={`px-4 py-2 cursor-pointer ${
                         selected ? "bg-blue-100 font-semibold" : "hover:bg-gray-100"
                       }`}
                     >
@@ -109,10 +140,16 @@ export default function ReportFilters({ onApply }) {
     </div>
   );
 
-  /* ---------------------- Clear / Apply ---------------------- */
+  /* ---------------- APPLY / CLEAR ---------------- */
 
   const handleApply = () => {
-    onApply(filters);
+    const cleanFilters = Object.fromEntries(
+      Object.entries(filters).filter(
+        ([_, value]) => value !== "" && value !== null && value !== undefined
+      )
+    );
+
+    onApply(cleanFilters);
   };
 
   const handleClear = () => {
@@ -134,7 +171,9 @@ export default function ReportFilters({ onApply }) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-300 p-6 mb-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-5">CSV Report Filters</h2>
+      <h2 className="text-xl font-semibold text-gray-800 mb-5">
+        CSV Report Filters
+      </h2>
 
       <div className="flex flex-wrap gap-6 items-end">
         {/* Report Type */}
@@ -146,26 +185,24 @@ export default function ReportFilters({ onApply }) {
           options={reportOptions}
         />
 
-        {/* Agent Code → only for per-user reports */}
+        {/* User */}
         {isUserReport && (
-          <div className="relative w-full md:w-64">
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Agent Code
-            </label>
-            <FaUser className="absolute left-3 top-[38px] text-gray-400 text-sm" />
-            <input
-              type="text"
-              placeholder="DESKTOP-00-57"
-              value={filters.agent_code}
-              onChange={(e) =>
-                setFilters({ ...filters, agent_code: e.target.value })
-              }
-              className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 hover:bg-gray-100 shadow-sm"
-            />
-          </div>
+          <Dropdown
+            label="User"
+            icon={<FaUser />}
+            value={filters.agent_code}
+            onChange={(v) => setFilters({ ...filters, agent_code: v })}
+            options={[
+              { label: loadingUsers ? "Loading..." : "All Users", value: "" },
+              ...users.map((u) => ({
+                label: `${u.name} (${u.agent_code})`,
+                value: u.agent_code,
+              })),
+            ]}
+          />
         )}
 
-        {/* Department (loaded dynamically) */}
+        {/* Department */}
         <Dropdown
           label="Department"
           icon={<FaBuilding />}
@@ -185,14 +222,14 @@ export default function ReportFilters({ onApply }) {
           <label className="block text-xs font-semibold text-gray-700 mb-1">
             Start Date
           </label>
-          <FaCalendarAlt className="absolute left-3 top-[38px] text-gray-400 text-sm" />
+          <FaCalendarAlt className="absolute left-3 top-[38px] text-gray-400" />
           <input
             type="datetime-local"
             value={filters.start_date}
             onChange={(e) =>
               setFilters({ ...filters, start_date: e.target.value })
             }
-            className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 hover:bg-gray-100 shadow-sm"
+            className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg"
           />
         </div>
 
@@ -201,29 +238,31 @@ export default function ReportFilters({ onApply }) {
           <label className="block text-xs font-semibold text-gray-700 mb-1">
             End Date
           </label>
-          <FaCalendarAlt className="absolute left-3 top-[38px] text-gray-400 text-sm" />
+          <FaCalendarAlt className="absolute left-3 top-[38px] text-gray-400" />
           <input
             type="datetime-local"
             value={filters.end_date}
             onChange={(e) =>
               setFilters({ ...filters, end_date: e.target.value })
             }
-            className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 hover:bg-gray-100 shadow-sm"
+            className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg"
           />
         </div>
 
         {/* Buttons */}
         <div className="flex items-center gap-3">
           <button
+            type="button" 
             onClick={handleApply}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg shadow-md hover:shadow-lg text-sm font-semibold"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg shadow-md text-sm font-semibold"
           >
             <FaFilter /> Apply
           </button>
 
           <button
+            type="button"  
             onClick={handleClear}
-            className="flex items-center gap-2 px-5 py-2.5 border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm text-sm font-medium"
+            className="flex items-center gap-2 px-5 py-2.5 border border-gray-300 bg-gray-100 rounded-lg shadow-sm text-sm font-medium"
           >
             <FaTimes /> Clear
           </button>
