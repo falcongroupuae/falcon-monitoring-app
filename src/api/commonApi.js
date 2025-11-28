@@ -2,7 +2,7 @@ import axiosInstance from "./axiosInstance";
 
 
 export const getMetaDepartments = (params) =>
-  axiosInstance.get("/meta/departments", { params });
+  axiosInstance.get("/stats/departments", { params });
 
 export const getMetaUsers = (params) =>
-  axiosInstance.get("/meta/users", { params });
+  axiosInstance.get("/stats/users", { params });

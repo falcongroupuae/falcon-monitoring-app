@@ -2,7 +2,7 @@ import axios from "axios";
 import { delay } from "../utils/delay";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.1.205:8090",
+  baseURL: "http://192.168.1.205:8060",
   headers: {
     "Content-Type": "application/json",
   },

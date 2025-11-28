@@ -48,7 +48,7 @@ export default function UserDetail() {
     {
       label: "Productive Events",
       value: k.keyword_productive_events,
-      color: "#004bc4",
+      color: "#12a592",
     },
     {
       label: "Unproductive Events",
