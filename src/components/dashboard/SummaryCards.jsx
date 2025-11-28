@@ -47,13 +47,13 @@ export default function SummaryCards({ filters }) {
         agent_code: filters.user || null,
       };
 
-      console.log("📡 FINAL PARAMS SENT:", queryParams);
-
+      
       const res = await getSummary(queryParams);
-
+      
       if (!res?.data) throw new Error("Invalid API response");
-
+      
       setSummary(res.data);
+      console.log("Summary:------------------------qqqq", res.data);
     } catch (err) {
       console.error(err);
       setHasError(true);

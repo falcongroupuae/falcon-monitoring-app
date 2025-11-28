@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import MiniPieChart from "../charts/MiniPieChart";
-import { getUserProductivity } from "../../api/usersApi"; 
+import { getUserProductivity } from "../../api/usersApi";
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
 
 export default function ProductivityCell({ agentCode }) {
@@ -18,15 +18,24 @@ export default function ProductivityCell({ agentCode }) {
       setLoading(true);
       setError(false);
 
-      const res = await getUserProductivity(agentCode);
+      const res = await getUserProductivity({ agent_code: agentCode });
 
-      const d = res.data;
+      const user = res.data?.find(
+        (u) => u.agent_id === agentCode
+      );
+
+      if (!user || user.productivity_score === undefined) {
+        throw new Error("User not found or score missing");
+      }
+
+      const productive = Number(user.productivity_score) || 0;
+      const unproductive = Math.max(0, 100 - productive);
 
       setChartData([
-        { label: "Productive", value: d.productive_seconds },
-        { label: "Unproductive", value: d.unproductive_seconds },
-        { label: "Neutral", value: d.neutral_seconds },
+        { label: "Productive", value: productive },
+        { label: "Unproductive", value: unproductive },
       ]);
+      console.log("Productivity data:", res.data);
     } catch (err) {
       console.error("Productivity fetch failed:", err);
       setError(true);

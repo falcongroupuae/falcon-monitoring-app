@@ -3,14 +3,12 @@ import { useParams } from "react-router-dom";
 
 import { getUserOverview } from "../api/usersApi";
 import { formatDuration } from "../utils/formatDuration";
-import { getUserProductivity } from "../api/usersApi";
 
 import DonutChart from "../components/charts/DonutChart";
 import { PieChartCard } from "../components/charts/PieChartCard";
 import { BarChartCard } from "../components/charts/BarChartCard";
 import { LineChartCard } from "../components/charts/LineChartCard";
 import ProductivityProgressBar from "../components/users/ProductivityProgressBar";
-
 import ModernAGTable from "../components/tables/AGTable";
 import { StackedBarChartCard } from "../components/charts/StackedBarChartCard";
 
@@ -20,12 +18,9 @@ export default function UserDetail() {
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [productivity, setProductivity] = useState(null);
-  const [loadingProd, setLoadingProd] = useState(true);
 
   useEffect(() => {
     loadUser();
-    loadProductivity();
   }, [agent_code]);
 
   const loadUser = async () => {
@@ -43,57 +38,32 @@ export default function UserDetail() {
     }
   };
 
-  const loadProductivity = async () => {
-    try {
-      setLoadingProd(true);
-      const res = await getUserProductivity(agent_code);
-      setProductivity(res.data);
-    } catch (err) {
-      console.error("Productivity error:", err);
-    } finally {
-      setLoadingProd(false);
-    }
-  };
-
   if (loading) return <div className="p-6 text-gray-500">Loading…</div>;
 
   if (error || !overview)
     return <div className="p-6 text-red-500">Failed to load user details.</div>;
 
   const k = overview.kpis;
-
-  const donutData = productivity
-    ? [
-        {
-          label: "Productive",
-          value: productivity.productive_seconds,
-          color: "#10B981",
-        },
-        {
-          label: "Unproductive",
-          value: productivity.unproductive_seconds,
-          color: "#EF4444",
-        },
-        {
-          label: "Neutral",
-          value: productivity.neutral_seconds || 1,
-          color: "#9CA3AF",
-        },
-      ]
-    : [];
-
-  const progressData = productivity
-    ? {
-        productive: productivity.productive_seconds,
-        unproductive: productivity.unproductive_seconds,
-        neutral: productivity.neutral_seconds,
-      }
-    : null;
-
-  const productivityPieData = [
-    { name: "Active", value: k.total_active_seconds, color: "#10B981" },
-    { name: "Idle", value: k.total_idle_seconds, color: "#EF4444" },
+  const donutData = [
+    {
+      label: "Productive Events",
+      value: k.keyword_productive_events,
+      color: "#004bc4",
+    },
+    {
+      label: "Unproductive Events",
+      value: k.keyword_unproductive_events,
+      color: "#f2560e",
+    },
+    {
+      label: "Neutral Events",
+      value: k.keyword_neutral_events,
+      color: "#7b7d7f",
+    },
   ];
+
+  /* ✅ KPI-BASED PROGRESS SCORE (OUT OF 100) */
+  const productivityScore = k.keyword_productivity_score;
 
   const topAppsBarData = overview.top_apps.map((a) => ({
     name: a.name,
@@ -138,15 +108,23 @@ export default function UserDetail() {
           title="Active Time"
           value={formatDuration(k.total_active_seconds)}
         />
-        <KPI title="Idle Time" value={formatDuration(k.total_idle_seconds)} />
-        <KPI title="Productivity Ratio" value={`${k.productivity_ratio}%`} />
+        <KPI
+          title="Idle Time"
+          value={formatDuration(k.total_idle_seconds)}
+        />
+        <KPI
+          title="Productivity Ratio"
+          value={`${k.productivity_ratio}%`}
+        />
       </div>
 
+      {/* ✅ FIXED PRODUCTIVITY SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ProductivityProgressBar data={progressData} />
-        <DonutChart title="Productivity Breakdown" data={donutData} />
+        <ProductivityProgressBar score={productivityScore} />
+        <DonutChart title="Event Breakdown" data={donutData} />
       </div>
 
+      {/* TOP APPS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PieChartCard title="Top Applications" data={topAppsPieData} />
         <BarChartCard
@@ -159,6 +137,7 @@ export default function UserDetail() {
         />
       </div>
 
+      {/* TOP SITES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PieChartCard title="Top Sites" data={topSitesPieData} />
         <BarChartCard
@@ -171,7 +150,8 @@ export default function UserDetail() {
         />
       </div>
 
-      <div className="grid grid-cols-1  lg:grid-cols-2 gap-6">
+      {/* DAILY ACTIVITY */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <LineChartCard
           title="Daily Activity Trend"
           data={dailyLineData}
@@ -180,10 +160,14 @@ export default function UserDetail() {
             lines: ["active", "idle"],
           }}
         />
-        <StackedBarChartCard title="Daily Activity Stacked Bar" data={dailyLineData} />
 
+        <StackedBarChartCard
+          title="Daily Activity Stacked Bar"
+          data={dailyLineData}
+        />
       </div>
 
+      {/* TABLES */}
       <ModernAGTable
         title="Top Applications"
         columns={["name", "count"]}
