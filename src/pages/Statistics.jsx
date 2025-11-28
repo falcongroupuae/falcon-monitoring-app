@@ -1,163 +1,233 @@
+import { useEffect, useState } from "react";
+
+import Filter from "../components/common/Filter";
+import {
+  getAppsHeatmap,
+  getTitlesHeatmap,
+  getDepartmentProductivity,
+} from "../api/statsApi";
 
 import { BarChartCard } from "../components/charts/BarChartCard";
-import { LineChartCard } from "../components/charts/LineChartCard";
-import Table from "../components/tables/Table";
 import { PieChartCard } from "../components/charts/PieChartCard";
+import AppsHeatmap from "../components/charts/AppsHeatmap";
+import DepartmentLoadHeatmap from "../components/charts/DepartmentLoadHeatmap";
+import ModernAGTable from "../components/tables/AGTable";
 
 export default function Statistics() {
-  const columns = [
-    "ID",
-    "AgentId",
-    "Department",
-    "EventType",
-    "Browser",
-    "URL",
-    "Title",
-    "IdleSeconds",
-    "TimeStamp",
-  ];
+  const [filters, setFilters] = useState({});
 
-  const dummyData = [
-    {
-      ID: 1,
-      AgentId: "A001",
-      Department: "IT",
-      EventType: "login",
-      Browser: "Chrome",
-      URL: "/dashboard",
-      Title: "Dashboard",
-      IdleSeconds: 120,
-      TimeStamp: "2025-10-01 12:00:00",
-    },
-    {
-      ID: 2,
-      AgentId: "A002",
-      Department: "HR",
-      EventType: "logout",
-      Browser: "Firefox",
-      URL: "/profile",
-      Title: "Profile",
-      IdleSeconds: 300,
-      TimeStamp: "2025-10-01 12:05:00",
-    },
-    {
-      ID: 3,
-      AgentId: "A003",
-      Department: "Sales",
-      EventType: "click",
-      Browser: "Safari",
-      URL: "/reports",
-      Title: "Reports",
-      IdleSeconds: 60,
-      TimeStamp: "2025-10-01 12:10:00",
-    },
-    {
-      ID: 4,
-      AgentId: "A004",
-      Department: "Finance",
-      EventType: "view",
-      Browser: "Edge",
-      URL: "/analytics",
-      Title: "Analytics",
-      IdleSeconds: 180,
-      TimeStamp: "2025-10-01 12:15:00",
-    },
-    {
-      ID: 5,
-      AgentId: "A004",
-      Department: "Finance",
-      EventType: "view",
-      Browser: "Edge",
-      URL: "/analytics",
-      Title: "Analytics",
-      IdleSeconds: 180,
-      TimeStamp: "2025-10-01 12:15:00",
-    },
-    {
-      ID: 6,
-      AgentId: "A004",
-      Department: "Finance",
-      EventType: "view",
-      Browser: "Edge",
-      URL: "/analytics",
-      Title: "Analytics",
-      IdleSeconds: 180,
-      TimeStamp: "2025-10-01 12:15:00",
-    },
-  ];
+  const [appsData, setAppsData] = useState([]);
+  const [titlesData, setTitlesData] = useState([]);
+  const [deptProductivity, setDeptProductivity] = useState([]);
 
-  // Chart data
-  const departmentData = [
-    { name: "IT", value: 400 },
-    { name: "HR", value: 300 },
-    { name: "Sales", value: 300 },
-    { name: "Finance", value: 200 },
-  ];
+  const [loadingApps, setLoadingApps] = useState(true);
+  const [loadingTitles, setLoadingTitles] = useState(true);
+  const [loadingDept, setLoadingDept] = useState(true);
 
-  const eventTypeData = [
-    { month: "Jan", login: 65, logout: 45, click: 80 },
-    { month: "Feb", login: 59, logout: 50, click: 75 },
-    { month: "Mar", login: 80, logout: 60, click: 85 },
-    { month: "Apr", login: 81, logout: 55, click: 90 },
-    { month: "May", login: 56, logout: 48, click: 70 },
-    { month: "Jun", login: 55, logout: 52, click: 78 },
-  ];
+  // ✅ Load ALL stats when filters change
+  useEffect(() => {
+    loadAllStats();
+  }, [filters]);
 
-  const browserData = [
-    { day: "Mon", Chrome: 120, Firefox: 80, Safari: 60, Edge: 40 },
-    { day: "Tue", Chrome: 130, Firefox: 85, Safari: 65, Edge: 45 },
-    { day: "Wed", Chrome: 115, Firefox: 90, Safari: 70, Edge: 50 },
-    { day: "Thu", Chrome: 140, Firefox: 95, Safari: 75, Edge: 55 },
-    { day: "Fri", Chrome: 125, Firefox: 88, Safari: 68, Edge: 48 },
-    { day: "Sat", Chrome: 100, Firefox: 70, Safari: 55, Edge: 35 },
-    { day: "Sun", Chrome: 90, Firefox: 65, Safari: 50, Edge: 30 },
-  ];
+  const loadAllStats = async () => {
+    try {
+      setLoadingApps(true);
+      setLoadingTitles(true);
+      setLoadingDept(true);
 
-  const pieColors = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+      const [appsRes, titlesRes, deptRes] = await Promise.all([
+        getAppsHeatmap(filters),
+        getTitlesHeatmap(filters),
+        getDepartmentProductivity(filters),
+      ]);
+
+      setAppsData(appsRes.data || []);
+      setTitlesData(titlesRes.data || []);
+      setDeptProductivity(deptRes.data || []);
+    } catch (err) {
+      console.error("Stats load failed:", err);
+      setAppsData([]);
+      setTitlesData([]);
+      setDeptProductivity([]);
+    } finally {
+      setLoadingApps(false);
+      setLoadingTitles(false);
+      setLoadingDept(false);
+    }
+  };
+
+  // ✅ Apply filters from global Filter
+  const handleApplyFilters = (applied) => {
+    setFilters(applied);
+  };
+
+  /* --------------------------
+     ✅ APPS TRANSFORM
+  ---------------------------*/
+  const departmentPieData = Object.values(
+    appsData.reduce((acc, row) => {
+      acc[row.department] = acc[row.department] || {
+        name: row.department,
+        value: 0,
+      };
+      acc[row.department].value += row.count;
+      return acc;
+    }, {})
+  );
+
+  const appBarData = Object.values(
+    appsData.reduce((acc, row) => {
+      acc[row.item] = acc[row.item] || { name: row.item, count: 0 };
+      acc[row.item].count += row.count;
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  /* --------------------------
+     ✅ TITLES TRANSFORM
+  ---------------------------*/
+  const titleBarData = Object.values(
+    titlesData.reduce((acc, row) => {
+      acc[row.item] = acc[row.item] || { name: row.item, count: 0 };
+      acc[row.item].count += row.count;
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  /* --------------------------
+     ✅ DEPARTMENT PRODUCTIVITY TRANSFORM
+  ---------------------------*/
+
+  const deptScoreBarData = deptProductivity.map((d) => ({
+    name: d.department,
+    score: Number(d.productivity_score.toFixed(2)),
+  }));
+
+  const deptStackedBarData = deptProductivity.map((d) => ({
+    name: d.department,
+    productive: d.productive_events,
+    unproductive: d.unproductive_events,
+    neutral: d.neutral_events,
+  }));
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Company</h1>
-      </div>
+    <div className="p-6 bg-gray-50 min-h-screen space-y-10">
+      {/* ✅ Page Header */}
+      <h1 className="text-3xl font-bold text-gray-800">Statistics</h1>
 
-      {/* Tables Grid - 2 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <PieChartCard
-          title="Department Distribution"
-          data={departmentData}
-          colors={pieColors}
-        />
-        <BarChartCard
-          title="Event Types by Month"
-          data={eventTypeData}
-          dataKeys={{ xAxis: "month", bars: ["login", "logout", "click"] }}
-        />
-      </div>
+      {/* ✅ GLOBAL FILTER */}
+      <Filter onApply={handleApplyFilters} />
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Table title="Reports Table" columns={columns} data={dummyData} />
-        <Table title="User Table" columns={columns} data={dummyData} />
-      </div>
+      {/* =========================================================
+          ✅ APPS HEATMAP SECTION
+      ========================================================= */}
+      {loadingApps ? (
+        <div className="text-gray-500 text-center">
+          Loading app heatmap…
+        </div>
+      ) : (
+        <>
+          <h2 className="text-xl font-bold text-gray-700">
+            Application Usage
+          </h2>
 
-      {/* Line Chart - Full Width */}
-      <div className="mb-6">
-        <LineChartCard
-          title="Browser Usage Trends"
-          data={browserData}
-          dataKeys={{
-            xAxis: "day",
-            lines: ["Chrome", "Firefox", "Safari", "Edge"],
-          }}
-        />
-      </div>
-      {/* Another row of tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Table title="Activity Table" columns={columns} data={dummyData} />
-        <Table title="Analytics Table" columns={columns} data={dummyData} />
-      </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PieChartCard
+              title="Department Usage (Apps)"
+              data={departmentPieData}
+            />
+
+            <BarChartCard
+              title="Top 10 Applications"
+              data={appBarData}
+              dataKeys={{ xAxis: "name", bars: ["count"] }}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <AppsHeatmap data={appsData} />
+            <DepartmentLoadHeatmap data={appsData} />
+          </div>
+        </>
+      )}
+
+      {/* =========================================================
+          ✅ TITLES HEATMAP SECTION
+      ========================================================= */}
+      {loadingTitles ? (
+        <div className="text-gray-500 text-center">
+          Loading titles heatmap…
+        </div>
+      ) : (
+        <>
+          <h2 className="text-xl font-bold text-gray-700">
+            Window Title Usage
+          </h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <BarChartCard
+              title="Top 10 Window Titles"
+              data={titleBarData}
+              dataKeys={{ xAxis: "name", bars: ["count"] }}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <AppsHeatmap data={titlesData} />
+            <DepartmentLoadHeatmap data={titlesData} />
+          </div>
+        </>
+      )}
+
+      {/* =========================================================
+          ✅ DEPARTMENT PRODUCTIVITY SECTION ✅✅✅
+      ========================================================= */}
+      {loadingDept ? (
+        <div className="text-gray-500 text-center">
+          Loading department productivity…
+        </div>
+      ) : (
+        <>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Department Productivity
+          </h2>
+
+          {/* ✅ Productivity Score Bar */}
+          <BarChartCard
+            title="Department Productivity Score (%)"
+            data={deptScoreBarData}
+            dataKeys={{ xAxis: "name", bars: ["score"] }}
+          />
+
+          {/* ✅ Productive vs Unproductive vs Neutral */}
+          <BarChartCard
+            title="Department Event Distribution"
+            data={deptStackedBarData}
+            dataKeys={{
+              xAxis: "name",
+              bars: ["productive", "unproductive", "neutral"],
+            }}
+          />
+
+          {/* ✅ Department Table */}
+          <ModernAGTable
+            title="Department Productivity Summary"
+            columns={[
+              "department",
+              "productive_events",
+              "unproductive_events",
+              "neutral_events",
+              "productivity_score",
+              "total_events",
+            ]}
+            data={deptProductivity}
+          />
+        </>
+      )}
     </div>
   );
 }
