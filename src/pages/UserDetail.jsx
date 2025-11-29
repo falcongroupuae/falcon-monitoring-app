@@ -108,14 +108,8 @@ export default function UserDetail() {
           title="Active Time"
           value={formatDuration(k.total_active_seconds)}
         />
-        <KPI
-          title="Idle Time"
-          value={formatDuration(k.total_idle_seconds)}
-        />
-        <KPI
-          title="Productivity Ratio"
-          value={`${k.productivity_ratio}%`}
-        />
+        <KPI title="Idle Time" value={formatDuration(k.total_idle_seconds)} />
+        <KPI title="Productivity Ratio" value={`${k.productivity_ratio}%`} />
       </div>
 
       {/* ✅ FIXED PRODUCTIVITY SECTION */}
@@ -166,19 +160,20 @@ export default function UserDetail() {
           data={dailyLineData}
         />
       </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ModernAGTable
+          title="Top Applications"
+          columns={["name", "count"]}
+          data={overview.top_apps}
+        />
 
-      {/* TABLES */}
-      <ModernAGTable
-        title="Top Applications"
-        columns={["name", "count"]}
-        data={overview.top_apps}
-      />
+        <ModernAGTable
+          title="Top Sites"
+          columns={["name", "count"]}
+          data={overview.top_sites}
+        />
+      </div>
 
-      <ModernAGTable
-        title="Top Sites"
-        columns={["name", "count"]}
-        data={overview.top_sites}
-      />
 
       <ModernAGTable
         title="Daily Activity"

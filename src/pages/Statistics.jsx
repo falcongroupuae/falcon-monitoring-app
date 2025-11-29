@@ -12,6 +12,7 @@ import { PieChartCard } from "../components/charts/PieChartCard";
 import AppsHeatmap from "../components/charts/AppsHeatmap";
 import DepartmentLoadHeatmap from "../components/charts/DepartmentLoadHeatmap";
 import ModernAGTable from "../components/tables/AGTable";
+import DepartmentProductivityHeatmap from "../components/charts/DepartmentProductivityHeatmap";
 
 export default function Statistics() {
   const [filters, setFilters] = useState({});
@@ -122,18 +123,11 @@ export default function Statistics() {
       {/* ✅ GLOBAL FILTER */}
       <Filter onApply={handleApplyFilters} />
 
-      {/* =========================================================
-          ✅ APPS HEATMAP SECTION
-      ========================================================= */}
       {loadingApps ? (
-        <div className="text-gray-500 text-center">
-          Loading app heatmap…
-        </div>
+        <div className="text-gray-500 text-center">Loading app heatmap…</div>
       ) : (
         <>
-          <h2 className="text-xl font-bold text-gray-700">
-            Application Usage
-          </h2>
+          <h2 className="text-xl font-bold text-gray-700">Application Usage</h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <PieChartCard
@@ -149,43 +143,11 @@ export default function Statistics() {
           </div>
 
           <div className="space-y-4">
-            <AppsHeatmap data={appsData} />
             <DepartmentLoadHeatmap data={appsData} />
           </div>
         </>
       )}
 
-      {/* =========================================================
-          ✅ TITLES HEATMAP SECTION
-      ========================================================= */}
-      {loadingTitles ? (
-        <div className="text-gray-500 text-center">
-          Loading titles heatmap…
-        </div>
-      ) : (
-        <>
-          <h2 className="text-xl font-bold text-gray-700">
-            Window Title Usage
-          </h2>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <BarChartCard
-              title="Top 10 Window Titles"
-              data={titleBarData}
-              dataKeys={{ xAxis: "name", bars: ["count"] }}
-            />
-          </div>
-
-          <div className="space-y-4">
-            <AppsHeatmap data={titlesData} />
-            <DepartmentLoadHeatmap data={titlesData} />
-          </div>
-        </>
-      )}
-
-      {/* =========================================================
-          ✅ DEPARTMENT PRODUCTIVITY SECTION ✅✅✅
-      ========================================================= */}
       {loadingDept ? (
         <div className="text-gray-500 text-center">
           Loading department productivity…
@@ -196,36 +158,52 @@ export default function Statistics() {
             Department Productivity
           </h2>
 
-          {/* ✅ Productivity Score Bar */}
-          <BarChartCard
-            title="Department Productivity Score (%)"
-            data={deptScoreBarData}
-            dataKeys={{ xAxis: "name", bars: ["score"] }}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <BarChartCard
+              title="Department Productivity Score (%)"
+              data={deptScoreBarData}
+              dataKeys={{ xAxis: "name", bars: ["score"] }}
+            />
+            <BarChartCard
+              title="Department Event Distribution"
+              data={deptStackedBarData}
+              dataKeys={{
+                xAxis: "name",
+                bars: ["productive", "unproductive", "neutral"],
+              }}
+              barColors={{
+                productive: "#10B981",
+                unproductive: "#EF4444",
+                neutral: "#9CA3AF",
+              }}
+            />
+          </div>
 
-          {/* ✅ Productive vs Unproductive vs Neutral */}
-          <BarChartCard
-            title="Department Event Distribution"
-            data={deptStackedBarData}
-            dataKeys={{
-              xAxis: "name",
-              bars: ["productive", "unproductive", "neutral"],
-            }}
-          />
-
-          {/* ✅ Department Table */}
-          <ModernAGTable
-            title="Department Productivity Summary"
-            columns={[
-              "department",
-              "productive_events",
-              "unproductive_events",
-              "neutral_events",
-              "productivity_score",
-              "total_events",
-            ]}
-            data={deptProductivity}
-          />
+          <div className="grid grid-cols-1 gap-6">
+            <DepartmentProductivityHeatmap data={deptProductivity} />
+          </div>
+          <div className="grid grid-cols-1 gap-6">
+            {loadingDept ? (
+              <div className="text-gray-500 text-center">
+                Loading department productivity…
+              </div>
+            ) : (
+              <>
+                <ModernAGTable
+                  title="Department Productivity Summary"
+                  columns={[
+                    "department",
+                    "productive_events",
+                    "unproductive_events",
+                    "neutral_events",
+                    "productivity_score",
+                    "total_events",
+                  ]}
+                  data={deptProductivity}
+                />
+              </>
+            )}
+          </div>
         </>
       )}
     </div>

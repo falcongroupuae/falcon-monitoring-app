@@ -22,12 +22,12 @@ export default function AppsHeatmap({ data = [] }) {
   const maxValue = Math.max(...data.map((d) => d.count));
 
   const getColor = (value) => {
-    if (!value) return "rgb(240, 253, 244)"; // #F0FDF4 lightest green
+    if (!value) return "rgb(155, 198, 255)"; // #F0FDF4 lightest green
 
     const intensity = value / maxValue;
 
-    const start = [240, 253, 244];
-    const end = [22, 163, 74];
+    const start = [155, 198, 255];
+    const end = [8, 55, 118];
 
     const r = start[0] + (end[0] - start[0]) * intensity;
     const g = start[1] + (end[1] - start[1]) * intensity;
