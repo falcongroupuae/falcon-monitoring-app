@@ -35,9 +35,8 @@ export default function ProductivityCell({ agentCode }) {
         { label: "Productive", value: productive },
         { label: "Unproductive", value: unproductive },
       ]);
-      console.log("Productivity data:", res.data);
     } catch (err) {
-      console.error("Productivity fetch failed:", err);
+      console.error(err);
       setError(true);
     } finally {
       setLoading(false);

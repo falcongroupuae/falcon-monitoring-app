@@ -36,7 +36,6 @@ export default function TopAppsPieChart({ filters }) {
         limit: 10,
       };
 
-      console.log("📡 Top Apps Params:", queryParams);
 
       const res = await getTopApps(queryParams);
 

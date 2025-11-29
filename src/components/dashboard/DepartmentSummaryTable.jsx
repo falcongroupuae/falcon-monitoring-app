@@ -36,8 +36,6 @@ export default function DepartmentSummaryTable({ filters }) {
         agent_code: filters.user || null,
       };
 
-      console.log("Department Summary params:", queryParams);
-
       const res = await getDepartmentSummary(queryParams);
 
       if (!Array.isArray(res.data)) {

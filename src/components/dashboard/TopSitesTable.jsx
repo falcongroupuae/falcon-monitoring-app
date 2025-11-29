@@ -36,8 +36,6 @@ export default function TopSitesTable({ filters }) {
         limit: 10,
       };
 
-      console.log("📡 TopSites params:", queryParams);
-
       const res = await getTopSites(queryParams);
 
       if (!Array.isArray(res.data)) {

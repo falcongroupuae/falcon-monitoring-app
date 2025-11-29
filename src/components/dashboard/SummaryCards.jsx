@@ -20,8 +20,6 @@ export default function SummaryCards({ filters }) {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    console.log(" Filters received by SummaryCards:", filters);
-
     fetchSummary();
   }, [filters]);
 
@@ -53,7 +51,6 @@ export default function SummaryCards({ filters }) {
       if (!res?.data) throw new Error("Invalid API response");
       
       setSummary(res.data);
-      console.log("Summary:------------------------qqqq", res.data);
     } catch (err) {
       console.error(err);
       setHasError(true);

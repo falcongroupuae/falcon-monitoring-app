@@ -36,8 +36,6 @@ export default function UserDailyTable({ filters }) {
         agent_code: filters.user || null,
       };
 
-      console.log("📡 UserDaily params:", queryParams);
-
       const res = await getUserDaily(queryParams);
 
       if (!Array.isArray(res.data)) {
