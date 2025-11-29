@@ -61,7 +61,7 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
         Department Productivity Heatmap
       </h2>
 
-      {/* ✅ FULL WIDTH – EXPANDING GRID */}
+      {/* FULL WIDTH – EXPANDING GRID */}
       <div className="overflow-auto w-full">
         <div
           className="grid w-full"
@@ -96,7 +96,7 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
         </div>
       </div>
 
-      {/* ✅ TOOLTIP */}
+      {/* TOOLTIP */}
       {tooltip && (
         <div
           className="fixed bg-black text-white text-xs px-3 py-2 rounded shadow-lg pointer-events-none"
@@ -112,7 +112,7 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
         </div>
       )}
 
-      {/* ✅ LEGEND */}
+      {/* LEGEND */}
       <div className="mt-4 flex items-center gap-3 text-xs text-gray-600">
         <span>Low</span>
         <div className="flex h-3 w-44 rounded overflow-hidden">
@@ -127,11 +127,11 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
   );
 }
 
-/* ✅ ROW COMPONENT */
+/* ROW COMPONENT */
 function HeatmapRow({ dept, metrics, matrix, getColor, setTooltip }) {
   return (
     <>
-      {/* ✅ LEFT LABEL COLUMN (SMALL) */}
+      {/* LEFT LABEL COLUMN (SMALL) */}
       <div className="text-xs font-semibold text-gray-700 flex items-center px-2 border-r">
         {dept}
       </div>
@@ -155,7 +155,7 @@ function HeatmapRow({ dept, metrics, matrix, getColor, setTooltip }) {
             }
             onMouseLeave={() => setTooltip(null)}
           >
-            {value}
+            {/* {value} */}
           </div>
         );
       })}

@@ -80,7 +80,7 @@ export default function UsersTable({ filters }) {
     { field: "agent_code", headerName: "Agent Code" },
     { field: "name", headerName: "Name" },
     { field: "department", headerName: "Department" },
-    { field: "first_seen", headerName: "First Seen" },
+    // { field: "first_seen", headerName: "First Seen" },
     { field: "last_seen", headerName: "Last Seen" },
     {
       field: "productivity",

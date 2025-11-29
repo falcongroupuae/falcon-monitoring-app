@@ -87,7 +87,7 @@ export default function Statistics() {
     .slice(0, 10);
 
   /* --------------------------
-     ✅ TITLES TRANSFORM
+      TITLES TRANSFORM
   ---------------------------*/
   const titleBarData = Object.values(
     titlesData.reduce((acc, row) => {
@@ -124,10 +124,9 @@ export default function Statistics() {
       <Filter onApply={handleApplyFilters} />
 
       {loadingApps ? (
-        <div className="text-gray-500 text-center">Loading app heatmap…</div>
+        <div className="text-gray-500 text-center">Loading Department Summary.....</div>
       ) : (
         <>
-          <h2 className="text-xl font-bold text-gray-700">Application Usage</h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <PieChartCard
@@ -150,13 +149,10 @@ export default function Statistics() {
 
       {loadingDept ? (
         <div className="text-gray-500 text-center">
-          Loading department productivity…
+          
         </div>
       ) : (
         <>
-          <h2 className="text-2xl font-bold text-gray-800">
-            Department Productivity
-          </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <BarChartCard

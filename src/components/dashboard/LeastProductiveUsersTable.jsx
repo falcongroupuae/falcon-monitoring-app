@@ -37,8 +37,6 @@ export default function LeastProductiveUsersTable({ filters }) {
         limit: 10,
       };
 
-      console.log("📡 LeastProductive params:", queryParams);
-
       const res = await getLeastProductiveUsers(queryParams);
 
       if (!Array.isArray(res.data)) throw new Error("Invalid API response");

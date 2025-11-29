@@ -65,6 +65,7 @@ export default function Filter({ onApply }) {
   };
 
   /* ------------------ Load Users --------------------- */
+  
   useEffect(() => {
     loadUsers();
   }, [filters.department]);
