@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { getUsers } from "../../api/usersApi";
-import ModernAGTable from "../tables/AGTable";
-
-import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+
+import { getAllUserOverview } from "../../api/usersApi";
+import ModernAGTable from "../tables/AGTable";
 import ProductivityCell from "./ProductivityCell";
 
 export default function UsersTable({ filters }) {
@@ -19,9 +17,11 @@ export default function UsersTable({ filters }) {
     fetchUsers();
   }, [filters]);
 
-  const formatDate = (iso) => {
-    if (!iso) return "-";
-    return new Date(iso).toLocaleString();
+  // ✅ SAME helper you already use elsewhere
+  const buildDateTime = (date, time, fallbackTime) => {
+    if (!date) return null;
+    const finalTime = time ? `${time}:00` : fallbackTime;
+    return `${date}T${finalTime}`;
   };
 
   const fetchUsers = async () => {
@@ -29,19 +29,49 @@ export default function UsersTable({ filters }) {
       setLoading(true);
       setHasError(false);
 
-      const res = await getUsers(filters);
-      if (!Array.isArray(res.data)) throw new Error("Invalid API response");
+      // ✅ ✅ ✅ THIS WAS MISSING — FILTER TRANSLATION
+      const queryParams = {
+        start_date: buildDateTime(
+          filters.startDate,
+          filters.startTime,
+          "00:00:00"
+        ),
+        end_date: buildDateTime(
+          filters.endDate,
+          filters.endTime,
+          "23:59:59"
+        ),
+        department: filters.department || null,
+        agent_code: filters.user || null,
+      };
 
-      const mapped = res.data.map((u) => ({
-        agent_code: u.agent_code,
-        name: u.name,
-        department: u.department,
-        first_seen: formatDate(u.first_seen_at),
-        last_seen: formatDate(u.last_seen_at),
-        productivity: u.agent_code,
-      }));
+      const res = await getAllUserOverview(queryParams);
+      const u = res.data;
 
-      setUsers(mapped);
+      if (!u || !Array.isArray(u.daily_activity)) {
+        throw new Error("Invalid API response: daily_activity missing");
+      }
+
+      // ✅ One row per agent_id, latest day wins
+      const userMap = new Map();
+
+      u.daily_activity.forEach((item) => {
+        if (!item.agent_id) return;
+
+        const existing = userMap.get(item.agent_id);
+
+        if (!existing || new Date(item.day) > new Date(existing.last_seen)) {
+          userMap.set(item.agent_id, {
+            agent_code: item.agent_id,
+            name: item.name || "-",
+            department: u.department || "-",
+            last_seen: item.day,
+            productivity: item.agent_id,
+          });
+        }
+      });
+
+      setUsers(Array.from(userMap.values()));
     } catch (err) {
       console.error(err);
       setHasError(true);
@@ -52,25 +82,24 @@ export default function UsersTable({ filters }) {
     }
   };
 
+  // ✅ Prevent AG Grid object type warnings
   const LoadingRow = [
     {
-      agent_code: <FaSpinner className="animate-spin" />,
-      name: "...",
-      department: "...",
-      first_seen: "...",
-      last_seen: "...",
-      productivity: "...",
+      agent_code: "Loading...",
+      name: "Loading...",
+      department: "Loading...",
+      last_seen: "Loading...",
+      productivity: null,
     },
   ];
 
   const ErrorRow = [
     {
-      agent_code: <FaExclamationTriangle className="text-red-500" />,
+      agent_code: "Error",
       name: "Error",
       department: "-",
-      first_seen: "-",
       last_seen: "-",
-      productivity: "-",
+      productivity: null,
     },
   ];
 
@@ -80,13 +109,17 @@ export default function UsersTable({ filters }) {
     { field: "agent_code", headerName: "Agent Code" },
     { field: "name", headerName: "Name" },
     { field: "department", headerName: "Department" },
-    // { field: "first_seen", headerName: "First Seen" },
     { field: "last_seen", headerName: "Last Seen" },
     {
       field: "productivity",
       headerName: "Productivity",
       minWidth: 150,
-      cellRenderer: (params) => <ProductivityCell agentCode={params.value} />,
+      cellRenderer: (params) => {
+        if (!params.value || params.value === "ALL_USERS") {
+          return <span className="text-gray-400">N/A</span>;
+        }
+        return <ProductivityCell agentCode={params.value} />;
+      },
     },
   ];
 

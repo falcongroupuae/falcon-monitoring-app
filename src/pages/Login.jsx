@@ -39,7 +39,7 @@ export default function Login() {
       <div className="flex justify-center h-screen">
         {/* Left Image Section */}
         <div
-          className="hidden bg-cover lg:block lg:w-2/3"
+          className="hidden relative bg-cover lg:block lg:w-2/3"
           style={{ backgroundImage: `url(${loginBg})` }}
         >
           <div className="flex items-center h-full px-20 bg-black/30">
@@ -52,6 +52,12 @@ export default function Login() {
                 insights and reports securely.
               </p>
             </div>
+          </div>
+
+          {/* ✅ Bottom-Centered Credit INSIDE Image Only */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-center text-[11px] text-gray-200">
+            Developed by <span className="font-bold">Muhammed Mushraf</span> &{" "}
+            <span className="font-bold">Ansil Rahman</span>
           </div>
         </div>
 

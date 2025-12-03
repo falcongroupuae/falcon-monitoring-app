@@ -13,3 +13,9 @@ export const getUserOverview = (agent_code, filters = {}) =>
   axiosInstance.get("/stats/user-overview", {
     params: { agent_code, ...filters },
   });
+
+
+  export const getAllUserOverview = (filters = {}) =>
+  axiosInstance.get("/stats/user-overview", {
+    params: filters,
+  });
