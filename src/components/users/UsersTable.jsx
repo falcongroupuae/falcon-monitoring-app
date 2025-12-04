@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import { getAllUserOverview } from "../../api/usersApi";
+import { getSummary } from "../../api/dashboardApi"; // ✅ summary api
 import ModernAGTable from "../tables/AGTable";
 import ProductivityCell from "./ProductivityCell";
+import { formatDuration } from "../../utils/formatDuration";
 
 export default function UsersTable({ filters }) {
   const [users, setUsers] = useState([]);
@@ -17,7 +19,6 @@ export default function UsersTable({ filters }) {
     fetchUsers();
   }, [filters]);
 
-  // ✅ SAME helper you already use elsewhere
   const buildDateTime = (date, time, fallbackTime) => {
     if (!date) return null;
     const finalTime = time ? `${time}:00` : fallbackTime;
@@ -29,8 +30,8 @@ export default function UsersTable({ filters }) {
       setLoading(true);
       setHasError(false);
 
-      // ✅ ✅ ✅ THIS WAS MISSING — FILTER TRANSLATION
-      const queryParams = {
+      // ✅ Base filters (same used everywhere)
+      const baseParams = {
         start_date: buildDateTime(
           filters.startDate,
           filters.startTime,
@@ -45,14 +46,15 @@ export default function UsersTable({ filters }) {
         agent_code: filters.user || null,
       };
 
-      const res = await getAllUserOverview(queryParams);
+      // ✅ 1️⃣ Load overview users (identity only)
+      const res = await getAllUserOverview(baseParams);
       const u = res.data;
 
       if (!u || !Array.isArray(u.daily_activity)) {
         throw new Error("Invalid API response: daily_activity missing");
       }
 
-      // ✅ One row per agent_id, latest day wins
+      // ✅ 2️⃣ Build latest user list
       const userMap = new Map();
 
       u.daily_activity.forEach((item) => {
@@ -64,14 +66,47 @@ export default function UsersTable({ filters }) {
           userMap.set(item.agent_id, {
             agent_code: item.agent_id,
             name: item.name || "-",
-            department: u.department || "-",
+            department: item.department || "-",
             last_seen: item.day,
+            active_seconds: "Loading...",
+            idle_seconds: "Loading...",
             productivity: item.agent_id,
           });
         }
       });
 
-      setUsers(Array.from(userMap.values()));
+      const baseUsers = Array.from(userMap.values());
+
+      // ✅ 3️⃣ Fetch CORRECT active & idle from /stats/summary per user
+      const enrichedUsers = await Promise.all(
+        baseUsers.map(async (user) => {
+          try {
+            const summaryRes = await getSummary({
+              start_date: baseParams.start_date,
+              end_date: baseParams.end_date,
+              department: user.department,
+              agent_code: user.agent_code,
+            });
+
+            const s = summaryRes.data;
+
+            return {
+              ...user,
+              active_seconds: formatDuration(s.active_seconds),
+              idle_seconds: formatDuration(s.idle_seconds),
+            };
+          } catch (err) {
+            console.error("Summary failed for", user.agent_code);
+            return {
+              ...user,
+              active_seconds: "-",
+              idle_seconds: "-",
+            };
+          }
+        })
+      );
+
+      setUsers(enrichedUsers);
     } catch (err) {
       console.error(err);
       setHasError(true);
@@ -82,13 +117,13 @@ export default function UsersTable({ filters }) {
     }
   };
 
-  // ✅ Prevent AG Grid object type warnings
   const LoadingRow = [
     {
       agent_code: "Loading...",
       name: "Loading...",
       department: "Loading...",
-      last_seen: "Loading...",
+      active_seconds: "Loading...",
+      idle_seconds: "Loading...",
       productivity: null,
     },
   ];
@@ -98,7 +133,8 @@ export default function UsersTable({ filters }) {
       agent_code: "Error",
       name: "Error",
       department: "-",
-      last_seen: "-",
+      active_seconds: "-",
+      idle_seconds: "-",
       productivity: null,
     },
   ];
@@ -109,7 +145,8 @@ export default function UsersTable({ filters }) {
     { field: "agent_code", headerName: "Agent Code" },
     { field: "name", headerName: "Name" },
     { field: "department", headerName: "Department" },
-    { field: "last_seen", headerName: "Last Seen" },
+    { field: "active_seconds", headerName: "Active" },
+    { field: "idle_seconds", headerName: "Idle" },
     {
       field: "productivity",
       headerName: "Productivity",
