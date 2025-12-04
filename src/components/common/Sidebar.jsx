@@ -101,7 +101,7 @@ export default function Sidebar({ collapsed }) {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
+      {/* <div className="p-4 border-t border-gray-200">
         <div className={`flex items-center p-3 rounded-xl  hover:bg-gray-100 transition-all duration-200 cursor-pointer ${collapsed ? "justify-center" : ""}`}>
           <div className="w-9 h-9 flex items-center justify-center font-bold text-gray-800">
             <FaCog/>
@@ -112,7 +112,7 @@ export default function Sidebar({ collapsed }) {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

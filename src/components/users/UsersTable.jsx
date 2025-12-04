@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import { getAllUserOverview } from "../../api/usersApi";
-import { getSummary } from "../../api/dashboardApi"; // ✅ summary api
+import { getSummary } from "../../api/dashboardApi";
 import ModernAGTable from "../tables/AGTable";
 import ProductivityCell from "./ProductivityCell";
 import { formatDuration } from "../../utils/formatDuration";
@@ -30,7 +30,6 @@ export default function UsersTable({ filters }) {
       setLoading(true);
       setHasError(false);
 
-      // ✅ Base filters (same used everywhere)
       const baseParams = {
         start_date: buildDateTime(
           filters.startDate,
@@ -46,7 +45,7 @@ export default function UsersTable({ filters }) {
         agent_code: filters.user || null,
       };
 
-      // ✅ 1️⃣ Load overview users (identity only)
+      // ✅ Load user identity from overview
       const res = await getAllUserOverview(baseParams);
       const u = res.data;
 
@@ -54,7 +53,7 @@ export default function UsersTable({ filters }) {
         throw new Error("Invalid API response: daily_activity missing");
       }
 
-      // ✅ 2️⃣ Build latest user list
+      // ✅ Latest day per agent
       const userMap = new Map();
 
       u.daily_activity.forEach((item) => {
@@ -77,14 +76,12 @@ export default function UsersTable({ filters }) {
 
       const baseUsers = Array.from(userMap.values());
 
-      // ✅ 3️⃣ Fetch CORRECT active & idle from /stats/summary per user
+      // ✅ Load CORRECT active/idle from summary API
       const enrichedUsers = await Promise.all(
         baseUsers.map(async (user) => {
           try {
             const summaryRes = await getSummary({
-              start_date: baseParams.start_date,
-              end_date: baseParams.end_date,
-              department: user.department,
+              ...baseParams,
               agent_code: user.agent_code,
             });
 
@@ -95,8 +92,7 @@ export default function UsersTable({ filters }) {
               active_seconds: formatDuration(s.active_seconds),
               idle_seconds: formatDuration(s.idle_seconds),
             };
-          } catch (err) {
-            console.error("Summary failed for", user.agent_code);
+          } catch {
             return {
               ...user,
               active_seconds: "-",
@@ -151,12 +147,12 @@ export default function UsersTable({ filters }) {
       field: "productivity",
       headerName: "Productivity",
       minWidth: 150,
-      cellRenderer: (params) => {
-        if (!params.value || params.value === "ALL_USERS") {
-          return <span className="text-gray-400">N/A</span>;
-        }
-        return <ProductivityCell agentCode={params.value} />;
-      },
+      cellRenderer: (params) =>
+        !params.value || params.value === "ALL_USERS" ? (
+          <span className="text-gray-400">N/A</span>
+        ) : (
+          <ProductivityCell agentCode={params.value} />
+        ),
     },
   ];
 
@@ -165,7 +161,11 @@ export default function UsersTable({ filters }) {
       title="Users List"
       columns={columns}
       data={finalRows}
-      onRowClick={(row) => navigate(`/users/${row.agent_code}`)}
+      onRowClick={(row) =>
+        navigate(`/users/${row.agent_code}`, {
+          state: { filters }, // ✅ PASS GLOBAL FILTER TO DETAIL PAGE
+        })
+      }
     />
   );
 }

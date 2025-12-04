@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 import { getUserOverview } from "../api/usersApi";
+import { getSummary } from "../api/dashboardApi";
 import { formatDuration } from "../utils/formatDuration";
 
 import DonutChart from "../components/charts/DonutChart";
@@ -14,22 +15,78 @@ import { StackedBarChartCard } from "../components/charts/StackedBarChartCard";
 
 export default function UserDetail() {
   const { agent_code } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  // READ FILTERS FROM URL OR STATE
+  const urlParams = new URLSearchParams(location.search);
+
+  const initialFilters =
+    location.state?.filters || {
+      startDate: urlParams.get("startDate") || "",
+      endDate: urlParams.get("endDate") || "",
+      startTime: urlParams.get("startTime") || "",
+      endTime: urlParams.get("endTime") || "",
+      department: urlParams.get("department") || "",
+    };
+
+  const [filters, setFilters] = useState(initialFilters);
   const [overview, setOverview] = useState(null);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // ✅ KEEP FILTERS SYNCED TO URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (filters.startDate) params.set("startDate", filters.startDate);
+    if (filters.endDate) params.set("endDate", filters.endDate);
+    if (filters.startTime) params.set("startTime", filters.startTime);
+    if (filters.endTime) params.set("endTime", filters.endTime);
+    if (filters.department) params.set("department", filters.department);
+
+    navigate({ search: params.toString() }, { replace: true });
+  }, [filters, navigate]);
+
   useEffect(() => {
     loadUser();
-  }, [agent_code]);
+  }, [agent_code, filters]);
 
+  const buildDateTime = (date, time, fallbackTime) => {
+    if (!date) return null;
+    const finalTime = time ? `${time}:00` : fallbackTime;
+    return `${date}T${finalTime}`;
+  };
+
+  // ✅ LOAD OVERVIEW + SUMMARY
   const loadUser = async () => {
     try {
       setLoading(true);
       setError(false);
 
-      const res = await getUserOverview(agent_code);
-      setOverview(res.data);
+      const queryParams = {
+        start_date: buildDateTime(
+          filters.startDate,
+          filters.startTime,
+          "00:00:00"
+        ),
+        end_date: buildDateTime(
+          filters.endDate,
+          filters.endTime,
+          "23:59:59"
+        ),
+        department: filters.department || null,
+        agent_code,
+      };
+
+      const [overviewRes, summaryRes] = await Promise.all([
+        getUserOverview(queryParams),
+        getSummary(queryParams),
+      ]);
+
+      setOverview(overviewRes.data);
+      setSummary(summaryRes.data);
     } catch (err) {
       console.error(err);
       setError(true);
@@ -38,12 +95,31 @@ export default function UserDetail() {
     }
   };
 
-  if (loading) return <div className="p-6 text-gray-500">Loading…</div>;
+  // ✅ CLEAR FILTERS
+  const clearFilters = () => {
+    setFilters({
+      startDate: "",
+      endDate: "",
+      startTime: "",
+      endTime: "",
+      department: "",
+    });
 
-  if (error || !overview)
+    navigate(`/users/${agent_code}`, { replace: true });
+  };
+
+  // ✅ BACK BUTTON
+  const goBack = () => {
+    navigate(-1);
+  };
+
+  if (loading) return <div className="p-6 text-gray-500">Loading…</div>;
+  if (error || !overview || !summary)
     return <div className="p-6 text-red-500">Failed to load user details.</div>;
 
   const k = overview.kpis;
+
+  // ✅ DONUT DATA
   const donutData = [
     {
       label: "Productive Events",
@@ -62,22 +138,10 @@ export default function UserDetail() {
     },
   ];
 
-  /* ✅ KPI-BASED PROGRESS SCORE (OUT OF 100) */
-  const productivityScore = k.keyword_productivity_score;
-
+  // ✅ CHART DATA
   const topAppsBarData = overview.top_apps.map((a) => ({
     name: a.name,
     count: a.count,
-  }));
-
-  const topSitesBarData = overview.top_sites.map((s) => ({
-    name: s.name,
-    count: s.count,
-  }));
-
-  const topAppsPieData = overview.top_apps.map((a) => ({
-    name: a.name,
-    value: a.count,
   }));
 
   const topSitesPieData = overview.top_sites.map((s) => ({
@@ -92,35 +156,69 @@ export default function UserDetail() {
   }));
 
   return (
-    <div className="p-6 space-y-10">
-      {/* TITLE */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">{overview.name}</h1>
-        <p className="text-gray-600">
-          {overview.agent_id} — {overview.department}
-        </p>
+    <div className="p-6 space-y-6">
+      {/* ✅ BACK + TITLE */}
+      <div className="flex items-center justify-between">
+        <div>
+          <button
+            onClick={goBack}
+            className="mb-2 text-sm text-blue-600 hover:underline"
+          >
+            ← Back to Users
+          </button>
+
+          <h1 className="text-3xl font-bold text-gray-800">
+            {overview.name}
+          </h1>
+
+          <p className="text-gray-600">
+            {overview.agent_id} — {overview.department}
+          </p>
+        </div>
+
+        <button
+          onClick={clearFilters}
+          className="px-4 py-2 text-sm rounded-lg bg-gray-200 hover:bg-gray-300"
+        >
+          Clear Filters
+        </button>
       </div>
 
-      {/* KPI CARDS */}
+      {/* ✅ FILTER CHIPS */}
+      <div className="flex flex-wrap gap-2">
+        {filters.startDate && <Chip label={`Start: ${filters.startDate}`} />}
+        {filters.endDate && <Chip label={`End: ${filters.endDate}`} />}
+        {filters.startTime && <Chip label={`From: ${filters.startTime}`} />}
+        {filters.endTime && <Chip label={`To: ${filters.endTime}`} />}
+        {filters.department && <Chip label={`Dept: ${filters.department}`} />}
+      </div>
+
+      {/* ✅ KPI CARDS (ACTIVE & IDLE FROM SUMMARY API) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <KPI title="Total Events" value={k.total_events} />
+        <KPI title="Total Events" value={summary.events} />
         <KPI
           title="Active Time"
-          value={formatDuration(k.total_active_seconds)}
+          value={formatDuration(summary.active_seconds)}
         />
-        <KPI title="Idle Time" value={formatDuration(k.total_idle_seconds)} />
-        <KPI title="Productivity Ratio" value={`${k.productivity_ratio}%`} />
+        <KPI
+          title="Idle Time"
+          value={formatDuration(summary.idle_seconds)}
+        />
+        <KPI
+          title="Productivity Ratio"
+          value={`${k.productivity_ratio}%`}
+        />
       </div>
 
-      {/* ✅ FIXED PRODUCTIVITY SECTION */}
+      {/* ✅ PRODUCTIVITY + DONUT */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ProductivityProgressBar score={productivityScore} />
+        <ProductivityProgressBar score={k.keyword_productivity_score} />
         <DonutChart title="Event Breakdown" data={donutData} />
       </div>
 
-      {/* TOP APPS */}
+      {/* ✅ TOP SITES & APPS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PieChartCard title="Top Applications" data={topAppsPieData} />
+        <PieChartCard title="Top Sites" data={topSitesPieData} />
         <BarChartCard
           title="Most Used Applications"
           data={topAppsBarData}
@@ -131,28 +229,12 @@ export default function UserDetail() {
         />
       </div>
 
-      {/* TOP SITES */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PieChartCard title="Top Sites" data={topSitesPieData} />
-        <BarChartCard
-          title="Most Visited Sites"
-          data={topSitesBarData}
-          dataKeys={{
-            xAxis: "name",
-            bars: ["count"],
-          }}
-        />
-      </div>
-
-      {/* DAILY ACTIVITY */}
+      {/* ✅ DAILY ACTIVITY CHARTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <LineChartCard
           title="Daily Activity Trend"
           data={dailyLineData}
-          dataKeys={{
-            xAxis: "day",
-            lines: ["active", "idle"],
-          }}
+          dataKeys={{ xAxis: "day", lines: ["active", "idle"] }}
         />
 
         <StackedBarChartCard
@@ -160,6 +242,8 @@ export default function UserDetail() {
           data={dailyLineData}
         />
       </div>
+
+      {/* ✅ TOP TABLES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ModernAGTable
           title="Top Applications"
@@ -174,7 +258,7 @@ export default function UserDetail() {
         />
       </div>
 
-
+      {/* ✅ DAILY ACTIVITY TABLE */}
       <ModernAGTable
         title="Daily Activity"
         columns={["day", "events", "active_seconds", "idle_seconds"]}
@@ -185,6 +269,15 @@ export default function UserDetail() {
         }))}
       />
     </div>
+  );
+}
+
+/* ✅ CHIP COMPONENT */
+function Chip({ label }) {
+  return (
+    <span className="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+      {label}
+    </span>
   );
 }
 
