@@ -20,7 +20,7 @@ export default function Users() {
         <UsersTable filters={filters} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8 auto-rows-max">
-        <LeastProductiveUsersTable filters={filters}/>
+        {/* <LeastProductiveUsersTable filters={filters}/> */}
       </div>
     </div>
   );

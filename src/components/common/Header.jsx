@@ -39,9 +39,9 @@ export default function Header({ onToggleSidebar }) {
         <div className="flex items-center gap-3">
 
           {/* Settings */}
-          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+          {/* <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
             <MdOutlineNightlight className="text-gray-600 text-lg" />
-          </button>
+          </button> */}
 
           {/* Divider */}
           <div className="h-8 w-px bg-gray-200"></div>
@@ -76,7 +76,7 @@ export default function Header({ onToggleSidebar }) {
                   onClick={() => setIsUserMenuOpen(false)}
                 ></div>
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-20">
-                  <div className="p-4 border-b flex gap-2 border-gray-200">
+                  {/* <div className="p-4 border-b flex gap-2 border-gray-200">
                     <div>
                       <img
                         src="/src/assets/images/profile.jpg"
@@ -93,8 +93,8 @@ export default function Header({ onToggleSidebar }) {
                         admin@falcongroup.com
                       </p>
                     </div>
-                  </div>
-                  <div className="p-2">
+                  </div> */}
+                  {/* <div className="p-2">
                     <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                       <FaUser className="text-gray-500" />
                       Edit Profile
@@ -103,7 +103,7 @@ export default function Header({ onToggleSidebar }) {
                       <FaCog className="text-gray-500" />
                       Account Setting
                     </button>
-                  </div>
+                  </div> */}
                   <div className="p-2 border-t border-gray-200">
                     <button
                       onClick={logout}
