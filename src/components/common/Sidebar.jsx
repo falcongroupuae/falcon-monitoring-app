@@ -88,7 +88,7 @@ export default function Sidebar({ collapsed }) {
                   className={`font-medium transition-all duration-200 ${
                     isActive
                       ? "text-white"
-                      : "text-gray-800 dark:text-gray-300 group-hover:text-white"
+                      : "text-gray-800 dark:text-gray-300 group-hover:text--red-600 dark:group-hover:text-white"
                   }`}
                 >
                   {item.name}

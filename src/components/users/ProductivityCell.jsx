@@ -46,7 +46,7 @@ export default function ProductivityCell({ agentCode }) {
   if (loading) {
     return (
       <div className="w-full flex justify-center">
-        <FaSpinner className="animate-spin text-gray-400 text-lg" />
+        <FaSpinner className="animate-spin text-gray-400 dark:text-gray-500 text-lg" />
       </div>
     );
   }
@@ -55,7 +55,7 @@ export default function ProductivityCell({ agentCode }) {
     return (
       <div className="w-full flex justify-center">
         <FaExclamationTriangle
-          className="text-red-500 text-lg"
+          className="text-red-500 dark:text-red-400 text-lg"
           title="Failed to load productivity"
         />
       </div>

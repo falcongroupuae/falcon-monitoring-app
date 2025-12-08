@@ -15,7 +15,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-5 bg-gray-50 dark:bg-gray-900 min-h-0 flex flex-col transition-colors">
+    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-0 flex flex-col space-y-10 transition-colors">
       <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
         Dashboard
       </h1>

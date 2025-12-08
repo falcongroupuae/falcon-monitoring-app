@@ -105,7 +105,7 @@ export default function Statistics() {
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen space-y-10 transition-colors">
       {/* ✅ Page Header */}
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
         Statistics
       </h1>
 

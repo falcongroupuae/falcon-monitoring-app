@@ -88,8 +88,8 @@ export default function Reports() {
   };
 
   return (
-    <div className="p-6 space-y-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+    <div className="p-6 space-y-10 bg-gray-50 dark:bg-gray-900 h-screen transition-colors">
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
         Reports
       </h1>
 
