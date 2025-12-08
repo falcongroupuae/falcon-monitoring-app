@@ -60,14 +60,18 @@ export default function TopSitesTable({ filters }) {
 
   const LoadingRow = [
     {
-      window_title: <FaSpinner className="animate-spin text-gray-500" />,
+      window_title: (
+        <FaSpinner className="animate-spin text-gray-500 dark:text-gray-400" />
+      ),
       count: "...",
     },
   ];
 
   const ErrorRow = [
     {
-      window_title: <FaExclamationTriangle className="text-red-500" />,
+      window_title: (
+        <FaExclamationTriangle className="text-red-500 dark:text-red-400" />
+      ),
       count: "Error",
     },
   ];

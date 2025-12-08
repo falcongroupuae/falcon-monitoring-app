@@ -15,38 +15,36 @@ export function PieChartCard({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Dynamic colors
   const colors = generateColors(data.length);
 
-  // 📌 Loading State (INSIDE card)
+  /* ---------- Loading State ---------- */
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-lg border p-6 h-full flex items-center justify-center">
-        <FaSpinner className="animate-spin text-gray-500 text-2xl" />
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 h-full flex items-center justify-center">
+        <FaSpinner className="animate-spin text-gray-500 dark:text-gray-400 text-2xl" />
       </div>
     );
   }
 
-  // 📌 Error State (INSIDE card)
+  /* ---------- Error State ---------- */
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-lg border p-6 h-full flex items-center justify-center text-red-500 gap-2">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 h-full flex items-center justify-center text-red-500 gap-2">
         <FaExclamationTriangle className="text-xl" />
         <span>Error loading site data</span>
       </div>
     );
   }
 
-  // 📌 No data state
+  /* ---------- Empty State ---------- */
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg border p-6 h-full flex items-center justify-center text-gray-500">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
         No data available
       </div>
     );
   }
 
-  // ----- Normal Chart -----
   const labelRenderer = ({ percent }) =>
     percent < 0.03 ? "" : `${(percent * 100).toFixed(0)}%`;
 
@@ -56,9 +54,13 @@ export function PieChartCard({
     const { name, value } = payload[0].payload;
 
     return (
-      <div className="bg-white border rounded-lg px-3 py-2 shadow text-sm">
-        <p className="font-semibold text-gray-800">{name}</p>
-        <p className="text-gray-600">{value} visits</p>
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 shadow text-sm">
+        <p className="font-semibold text-gray-800 dark:text-gray-100">
+          {name}
+        </p>
+        <p className="text-gray-600 dark:text-gray-400">
+          {value} visits
+        </p>
       </div>
     );
   };
@@ -66,19 +68,21 @@ export function PieChartCard({
   return (
     <>
       {/* CARD */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 h-full flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            {title}
+          </h3>
 
           <button
             onClick={() => setIsExpanded(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
-            <FaExpand className="text-gray-500 hover:text-blue-600" />
+            <FaExpand className="text-gray-500 dark:text-gray-400 hover:text-blue-600" />
           </button>
         </div>
 
-        {/* PIE CHART (Dashboard) */}
+        {/* PIE CHART */}
         <div className="flex-1 flex items-center justify-center">
           <ResponsiveContainer width="100%" height={500}>
             <PieChart>
@@ -104,14 +108,16 @@ export function PieChartCard({
       {/* EXPANDED MODAL */}
       {isExpanded && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col">
-            <div className="px-6 py-4 border-b flex items-center justify-between">
-              <h3 className="text-xl font-semibold">{title}</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col border border-gray-200 dark:border-gray-700">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {title}
+              </h3>
               <button
                 onClick={() => setIsExpanded(false)}
-                className="p-2 hover:bg-gray-200 rounded-lg"
+                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg"
               >
-                <FaTimes className="text-gray-500 hover:text-red-600 text-lg" />
+                <FaTimes className="text-gray-500 dark:text-gray-400 hover:text-red-600 text-lg" />
               </button>
             </div>
 
@@ -128,7 +134,7 @@ export function PieChartCard({
                     labelLine={false}
                   >
                     {data.map((entry, i) => (
-                     <Cell key={i} fill={entry.color || colors[i]} />
+                      <Cell key={i} fill={entry.color || colors[i]} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />

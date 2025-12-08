@@ -48,16 +48,16 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
 
   if (!data.length) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow text-gray-500 text-center">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow text-gray-500 dark:text-gray-400 text-center transition-colors">
         No department productivity data
       </div>
     );
   }
 
   return (
-    <div className="relative bg-white p-6 rounded-xl shadow border border-gray-200 w-full">
+    <div className="relative bg-white dark:bg-gray-800 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-700 w-full transition-colors">
 
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
         Department Productivity Heatmap
       </h2>
 
@@ -76,7 +76,7 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
           {metrics.map((m) => (
             <div
               key={m}
-              className="text-xs font-semibold text-gray-600 flex items-center justify-center capitalize"
+              className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center justify-center capitalize"
             >
               {m}
             </div>
@@ -99,7 +99,7 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
       {/* TOOLTIP */}
       {tooltip && (
         <div
-          className="fixed bg-black text-white text-xs px-3 py-2 rounded shadow-lg pointer-events-none"
+          className="fixed bg-black dark:bg-gray-800 text-white text-xs px-3 py-2 rounded shadow-lg pointer-events-none"
           style={{
             left: tooltip.x,
             top: tooltip.y,
@@ -107,13 +107,13 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
           }}
         >
           <div className="font-semibold capitalize">{tooltip.metric}</div>
-          <div className="text-gray-300">{tooltip.dept}</div>
+          <div className="text-gray-300 dark:text-gray-400">{tooltip.dept}</div>
           <div className="text-yellow-300">{tooltip.value} events</div>
         </div>
       )}
 
       {/* LEGEND */}
-      <div className="mt-4 flex items-center gap-3 text-xs text-gray-600">
+      <div className="mt-4 flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
         <span>Low</span>
         <div className="flex h-3 w-44 rounded overflow-hidden">
           <div className="flex-1 bg-[#10315a]" />
@@ -131,8 +131,8 @@ export default function DepartmentProductivityHeatmap({ data = [] }) {
 function HeatmapRow({ dept, metrics, matrix, getColor, setTooltip }) {
   return (
     <>
-      {/* LEFT LABEL COLUMN (SMALL) */}
-      <div className="text-xs font-semibold text-gray-700 flex items-center px-2 border-r">
+      {/* LEFT LABEL COLUMN */}
+      <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center px-2 border-r border-gray-200 dark:border-gray-700">
         {dept}
       </div>
 
@@ -155,11 +155,10 @@ function HeatmapRow({ dept, metrics, matrix, getColor, setTooltip }) {
             }
             onMouseLeave={() => setTooltip(null)}
           >
-            {/* {value} */}
+            {/* value intentionally hidden */}
           </div>
         );
-      })}
+      })} 
     </>
   );
 }
-

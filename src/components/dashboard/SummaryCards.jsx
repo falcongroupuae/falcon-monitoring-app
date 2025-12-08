@@ -45,11 +45,10 @@ export default function SummaryCards({ filters }) {
         agent_code: filters.user || null,
       };
 
-      
       const res = await getSummary(queryParams);
-      
+
       if (!res?.data) throw new Error("Invalid API response");
-      
+
       setSummary(res.data);
     } catch (err) {
       console.error(err);
@@ -61,10 +60,12 @@ export default function SummaryCards({ filters }) {
   };
 
   const LoadingIcon = (
-    <FaSpinner className="animate-spin text-gray-500 text-lg" />
+    <FaSpinner className="animate-spin text-gray-500 dark:text-gray-400 text-lg" />
   );
 
-  const ErrorIcon = <FaExclamationTriangle className="text-red-500 text-lg" />;
+  const ErrorIcon = (
+    <FaExclamationTriangle className="text-red-500 text-lg" />
+  );
 
   const renderCardValue = (raw) => {
     if (loading) return LoadingIcon;

@@ -34,7 +34,7 @@ function AppLayout({
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onToggleSidebar={toggleSidebar} />
-        <main className="flex-1 bg-gray-50  overflow-auto flex flex-col">
+        <main className="flex-1 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-auto flex flex-col">
           {children}
         </main>
       </div>

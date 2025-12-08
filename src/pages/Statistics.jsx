@@ -25,7 +25,6 @@ export default function Statistics() {
   const [loadingTitles, setLoadingTitles] = useState(true);
   const [loadingDept, setLoadingDept] = useState(true);
 
-  // ✅ Load ALL stats when filters change
   useEffect(() => {
     loadAllStats();
   }, [filters]);
@@ -46,7 +45,6 @@ export default function Statistics() {
       setTitlesData(titlesRes.data || []);
       setDeptProductivity(deptRes.data || []);
     } catch (err) {
-      console.error("Stats load failed:", err);
       setAppsData([]);
       setTitlesData([]);
       setDeptProductivity([]);
@@ -57,14 +55,10 @@ export default function Statistics() {
     }
   };
 
-  // ✅ Apply filters from global Filter
   const handleApplyFilters = (applied) => {
     setFilters(applied);
   };
 
-  /* --------------------------
-     ✅ APPS TRANSFORM
-  ---------------------------*/
   const departmentPieData = Object.values(
     appsData.reduce((acc, row) => {
       acc[row.department] = acc[row.department] || {
@@ -86,9 +80,6 @@ export default function Statistics() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
-  /* --------------------------
-      TITLES TRANSFORM
-  ---------------------------*/
   const titleBarData = Object.values(
     titlesData.reduce((acc, row) => {
       acc[row.item] = acc[row.item] || { name: row.item, count: 0 };
@@ -98,10 +89,6 @@ export default function Statistics() {
   )
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
-
-  /* --------------------------
-     ✅ DEPARTMENT PRODUCTIVITY TRANSFORM
-  ---------------------------*/
 
   const deptScoreBarData = deptProductivity.map((d) => ({
     name: d.department,
@@ -116,18 +103,21 @@ export default function Statistics() {
   }));
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen space-y-10">
+    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen space-y-10 transition-colors">
       {/* ✅ Page Header */}
-      <h1 className="text-3xl font-bold text-gray-800">Statistics</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+        Statistics
+      </h1>
 
       {/* ✅ GLOBAL FILTER */}
       <Filter onApply={handleApplyFilters} />
 
       {loadingApps ? (
-        <div className="text-gray-500 text-center">Loading Department Summary.....</div>
+        <div className="text-gray-500 dark:text-gray-400 text-center">
+          Loading Department Summary.....
+        </div>
       ) : (
         <>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <PieChartCard
               title="Department Usage (Apps)"
@@ -148,18 +138,16 @@ export default function Statistics() {
       )}
 
       {loadingDept ? (
-        <div className="text-gray-500 text-center">
-          
-        </div>
+        <div className="text-gray-500 dark:text-gray-400 text-center"></div>
       ) : (
         <>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <BarChartCard
               title="Department Productivity Score (%)"
               data={deptScoreBarData}
               dataKeys={{ xAxis: "name", bars: ["score"] }}
             />
+
             <BarChartCard
               title="Department Event Distribution"
               data={deptStackedBarData}
@@ -178,26 +166,25 @@ export default function Statistics() {
           <div className="grid grid-cols-1 gap-6">
             <DepartmentProductivityHeatmap data={deptProductivity} />
           </div>
+
           <div className="grid grid-cols-1 gap-6">
             {loadingDept ? (
-              <div className="text-gray-500 text-center">
+              <div className="text-gray-500 dark:text-gray-400 text-center">
                 Loading department productivity…
               </div>
             ) : (
-              <>
-                <ModernAGTable
-                  title="Department Productivity Summary"
-                  columns={[
-                    "department",
-                    "productive_events",
-                    "unproductive_events",
-                    "neutral_events",
-                    "productivity_score",
-                    "total_events",
-                  ]}
-                  data={deptProductivity}
-                />
-              </>
+              <ModernAGTable
+                title="Department Productivity Summary"
+                columns={[
+                  "department",
+                  "productive_events",
+                  "unproductive_events",
+                  "neutral_events",
+                  "productivity_score",
+                  "total_events",
+                ]}
+                data={deptProductivity}
+              />
             )}
           </div>
         </>

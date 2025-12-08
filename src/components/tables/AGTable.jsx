@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import {
   ModuleRegistry,
@@ -12,63 +12,89 @@ import { FaExpand, FaTimes } from "react-icons/fa";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const themeConfig = themeQuartz.withPart(iconSetQuartzBold).withParams({
-  backgroundColor: "#ffffff",
-  borderColor: "#00000026",
-  borderRadius: 0,
-  browserColorScheme: "light",
-  columnBorder: false,
-  fontFamily: "Arial",
-  foregroundColor: "#000000",
-  headerBackgroundColor: "#F9FAFB",
-  headerFontFamily: "inherit",
-  headerFontSize: 14,
-  headerFontWeight: 700,
-  headerTextColor: "#000000",
-  headerVerticalPaddingScale: 1.2,
-  oddRowBackgroundColor: "#F9FAFB",
-  rowBorder: true,
-  spacing: 0,
-  wrapperBorder: false,
-  wrapperBorderRadius: 0,
-});
+const agTheme = themeQuartz
+  .withPart(iconSetQuartzBold)
+
+  // 🌞 LIGHT MODE
+  .withParams(
+    {
+      backgroundColor: "#ffffff",
+      foregroundColor: "#000000",
+      cellTextColor: "#000000",
+      headerTextColor: "#000000",
+      headerBackgroundColor: "#F9FAFB",
+      borderColor: "#00000026",
+      browserColorScheme: "light",
+    },
+    "light"
+  )
+
+  // 🌙 DARK MODE (gray-800)
+  .withParams(
+    {
+      backgroundColor: "#1f2937", // gray-800
+      dataBackgroundColor: "#1f2937",
+      chromeBackgroundColor: "#1f2937",
+      headerBackgroundColor: "#1f2937",
+      oddRowBackgroundColor: "#1f2937",
+
+      borderColor: "#374151", // gray-700
+
+      foregroundColor: "#f3f4f6", // gray-100
+      cellTextColor: "#f3f4f6",
+      headerTextColor: "#f3f4f6",
+
+      browserColorScheme: "dark",
+    },
+    "dark"
+  );
 
 export default function ModernAGTable({ title, columns, data, onRowClick }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
-  // ⭐ FIXED: now supports both string + object columns
-  const columnDefs = useMemo(() => {
-    return columns.map((col) => {
-      // Case 1: string column ("name", "department")
-      if (typeof col === "string") {
-        return {
-          headerName: col.charAt(0).toUpperCase() + col.slice(1),
-          field: col,
-          sortable: true,
-          filter: true,
-          resizable: true,
-          flex: 1,
-          minWidth: 120,
-        };
-      }
+  /* ✅ SYNC WITH TAILWIND DARK */
+  useEffect(() => {
+    const update = () =>
+      setIsDark(document.documentElement.classList.contains("dark"));
 
-      // Case 2: object column
-      return {
-        headerName:
-          col.headerName ||
-          col.field.charAt(0).toUpperCase() + col.field.slice(1),
+    update();
 
-        field: col.field,
-        sortable: col.sortable ?? true,
-        filter: col.filter ?? true,
-        resizable: col.resizable ?? true,
-        flex: col.flex ?? 1,
-        minWidth: col.minWidth ?? 120,
-
-        // ⭐ IMPORTANT: Keep your custom renderer
-        cellRenderer: col.cellRenderer,
-      };
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
     });
+
+    return () => observer.disconnect();
+  }, []);
+
+  /* ✅ COLUMN DEFINITIONS */
+  const columnDefs = useMemo(() => {
+    return columns.map((col) =>
+      typeof col === "string"
+        ? {
+            headerName: col.charAt(0).toUpperCase() + col.slice(1),
+            field: col,
+            sortable: true,
+            filter: true,
+            resizable: true,
+            flex: 1,
+            minWidth: 120,
+          }
+        : {
+            headerName:
+              col.headerName ||
+              col.field.charAt(0).toUpperCase() + col.field.slice(1),
+            field: col.field,
+            sortable: col.sortable ?? true,
+            filter: col.filter ?? true,
+            resizable: col.resizable ?? true,
+            flex: col.flex ?? 1,
+            minWidth: col.minWidth ?? 120,
+            cellRenderer: col.cellRenderer,
+          }
+    );
   }, [columns]);
 
   const defaultColDef = useMemo(
@@ -83,67 +109,71 @@ export default function ModernAGTable({ title, columns, data, onRowClick }) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col">
-        <div className="px-6 py-4 bg-gray-50 rounded-t-2xl flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-800 flex flex-col">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 rounded-t-2xl flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            {title}
+          </h3>
           <button
             onClick={() => setIsExpanded(true)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800"
           >
-            <FaExpand className="text-gray-500 hover:text-blue-600" />
+            <FaExpand className="text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
-        <div className="w-full h-[800px] relative rounded-b-2xl flex-none shadow-lg overflow-hidden">
+        <div
+          data-ag-theme-mode={isDark ? "dark" : "light"}
+          className="w-full h-[800px] relative rounded-b-2xl flex-none shadow-lg overflow-hidden"
+        >
           <AgGridReact
+            key={isDark ? "dark" : "light"}
+            theme={agTheme}
             rowData={data}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             rowHeight={70}
             headerHeight={40}
-            pagination={true}
+            pagination
             paginationPageSize={10}
             paginationPageSizeSelector={[10, 20, 50]}
-            theme={themeConfig.theme}
-            themeOverrides={themeConfig.overrides}
-            onRowClicked={(e) => {
-              if (onRowClick) onRowClick(e.data);
-            }}
+            onRowClicked={(e) => onRowClick?.(e.data)}
           />
         </div>
       </div>
 
+      {/* ✅ EXPANDED MODAL */}
       {isExpanded && (
         <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col animate-in">
-            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center rounded-t-2xl">
-              <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
-
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 bg-gray-50 dark:bg-slate-800 flex justify-between items-center rounded-t-2xl">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+                {title}
+              </h3>
               <button
-                onClick={() => {
-                  setIsExpanded(false);
-                }}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                onClick={() => setIsExpanded(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800"
               >
-                <FaTimes className="text-gray-500 hover:text-red-600 text-lg" />
+                <FaTimes className="text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 
-            <div className="w-full h-full p-6" style={{ height: "70vh" }}>
+            <div
+              data-ag-theme-mode={isDark ? "dark" : "light"}
+              className="p-6 h-[70vh]"
+            >
               <AgGridReact
+                key={`expanded-${isDark}`}
+                theme={agTheme}
                 rowData={data}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 rowHeight={80}
                 headerHeight={40}
-                pagination={true}
+                pagination
                 paginationPageSize={20}
                 paginationPageSizeSelector={[20, 50, 100]}
-                theme={themeConfig.theme}
-                themeOverrides={themeConfig.overrides}
-                onRowClicked={(e) => {
-                  if (onRowClick) onRowClick(e.data);
-                }}
+                onRowClicked={(e) => onRowClick?.(e.data)}
               />
             </div>
           </div>

@@ -3,15 +3,17 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 export default function DonutChart({ title, data }) {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow flex items-center justify-center h-64 text-gray-500">
+      <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow flex items-center justify-center h-64 text-gray-500 dark:text-gray-400 transition-colors">
         No data available
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">{title}</h2>
+    <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-6 rounded-xl shadow transition-colors">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+        {title}
+      </h2>
 
       <div className="w-full h-64">
         <ResponsiveContainer>
@@ -36,9 +38,10 @@ export default function DonutChart({ title, data }) {
             <Tooltip
               formatter={(value, label) => [`${value} sec`, label]}
               contentStyle={{
-                background: "#fff",
-                border: "1px solid #ddd",
+                background: "#111827",
+                border: "1px solid #374151",
                 borderRadius: "6px",
+                color: "#ffffff",
               }}
             />
           </PieChart>
@@ -52,8 +55,10 @@ export default function DonutChart({ title, data }) {
             <span
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: item.color }}
-            ></span>
-            <span className="text-gray-700">{item.label}</span>
+            />
+            <span className="text-gray-700 dark:text-gray-300">
+              {item.label}
+            </span>
           </div>
         ))}
       </div>
