@@ -32,7 +32,12 @@ export default function Sidebar({ collapsed }) {
           <img
             src="/icon.png"
             alt="Falcon Icon"
-            className="w-10 h-10 object-contain flex-shrink-0"
+            className="w-10 h-10 object-contain flex-shrink-0 block dark:hidden"
+          />
+          <img
+            src="/icon.png"
+            alt="Falcon Icon"
+            className="w-10 h-10 object-contain flex-shrink-0 hidden dark:block"
           />
           {!collapsed && (
             <>
