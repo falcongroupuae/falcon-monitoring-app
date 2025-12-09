@@ -8,29 +8,26 @@ const axiosInstance = axios.create({
   },
 });
 
-// -------- Artificial delay for testing loading states --------
-// Only active in DEV mode to avoid slowing production
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+
+  // ✅ DO NOT attach token to login
+  if (token && !config.url.includes("/auth/login")) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
 axiosInstance.interceptors.response.use(
   async (response) => {
-    if (import.meta.env.DEV) {
-      await delay(1000);
-    }
+    if (import.meta.env.DEV) await delay(800);
     return response;
   },
   async (error) => {
-    if (import.meta.env.DEV) {
-      await delay(700);
-    }
+    if (import.meta.env.DEV) await delay(600);
     return Promise.reject(error);
   }
 );
-
-axiosInstance.interceptors.request.use((config) => {
-  const token = "supers3cr3ttoken";
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 export default axiosInstance;

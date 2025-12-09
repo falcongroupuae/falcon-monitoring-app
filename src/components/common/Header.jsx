@@ -1,28 +1,35 @@
 import { useState, useEffect } from "react";
 import profileImg from "../../assets/falcon-img.jpeg";
 import {
-  FaBell,
-  FaCog,
-  FaUser,
   FaSignOutAlt,
   FaChevronDown,
 } from "react-icons/fa";
 import { FaBarsStaggered } from "react-icons/fa6";
 import { MdOutlineNightlight } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 export default function Header({ onToggleSidebar }) {
   const navigate = useNavigate();
 
+  // ✅ Read logged-in user info
+  const username = localStorage.getItem("username") || "User";
+  const role = localStorage.getItem("role") || "";
+
+  // ✅ Logout (token-based)
   const logout = () => {
-    localStorage.removeItem("loggedIn");
-    localStorage.removeItem("userEmail");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
+
+    toast.success("Logged out successfully");
+
     navigate("/login", { replace: true });
   };
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // 🔹 Dark mode state: localStorage + system preference
+  // ✅ Dark mode state (localStorage + system preference)
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return false;
 
@@ -30,14 +37,13 @@ export default function Header({ onToggleSidebar }) {
     if (stored === "dark") return true;
     if (stored === "light") return false;
 
-    // fallback to system preference
     return (
       window.matchMedia &&
       window.matchMedia("(prefers-color-scheme: dark)").matches
     );
   });
 
-  // 🔹 Sync .dark class on <html> and persist setting
+  // ✅ Sync dark mode class
   useEffect(() => {
     const root = document.documentElement;
 
@@ -53,27 +59,27 @@ export default function Header({ onToggleSidebar }) {
   return (
     <header className="h-18 bg-gray-200 dark:bg-gray-900/70 sticky top-0 z-50">
       <div className="h-full flex items-center justify-between px-6">
-        {/* Left Section - Sidebar Toggle */}
+        {/* Left Section */}
         <div className="flex items-center gap-4">
           <button
             onClick={onToggleSidebar}
-            className="p-2.5 rounded-lg transition-colors duration-200 group hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="p-2.5 rounded-lg transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             title="Toggle sidebar"
           >
-            <FaBarsStaggered className="text-gray-800 dark:text-gray-100 group-hover:text-red-600 text-lg transition-colors" />
+            <FaBarsStaggered className="text-gray-800 dark:text-gray-100 text-lg" />
           </button>
         </div>
 
-        {/* Right Section - Actions */}
+        {/* Right Section */}
         <div className="flex items-center gap-3">
-          {/* 🌙 Dark mode toggle */}
+          {/* Dark Mode Toggle */}
           <button
             onClick={() => setDarkMode((prev) => !prev)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
             <MdOutlineNightlight
-              className={`text-lg transition-colors ${
+              className={`text-lg ${
                 darkMode
                   ? "text-yellow-300"
                   : "text-gray-600 dark:text-gray-300"
@@ -81,28 +87,32 @@ export default function Header({ onToggleSidebar }) {
             />
           </button>
 
-          {/* Divider */}
-          <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
+          <div className="h-8 w-px bg-gray-200 dark:bg-gray-700" />
 
           {/* User Menu */}
           <div className="relative">
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg px-2 py-1.5 transition-colors duration-200"
+              className="flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg px-2 py-1.5 transition-colors"
             >
               <img
                 src={profileImg}
-                alt="Falcon Icon"
-                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                alt="User"
+                className="w-10 h-10 rounded-full object-cover"
               />
+
+              {/* ✅ REAL user details */}
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                  Admin Falcon
+                  {username}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  admin@falcongroup.com
-                </p>
+                {role && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                    {role}
+                  </p>
+                )}
               </div>
+
               <FaChevronDown
                 className={`text-gray-400 dark:text-gray-300 text-xs transition-transform ${
                   isUserMenuOpen ? "rotate-180" : ""
@@ -110,17 +120,21 @@ export default function Header({ onToggleSidebar }) {
               />
             </button>
 
-            {/* User Dropdown */}
+            {/* Dropdown */}
             {isUserMenuOpen && (
               <>
                 <div
                   className="fixed inset-0 z-10"
                   onClick={() => setIsUserMenuOpen(false)}
-                ></div>
+                />
+
                 <div className="absolute right-0 mt-4 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-20">
-                  <div className="p-2 border-gray-200 dark:border-gray-700">
+                  <div className="p-2">
                     <button
-                      onClick={logout}
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        logout();
+                      }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
                     >
                       <FaSignOutAlt className="text-red-500" />

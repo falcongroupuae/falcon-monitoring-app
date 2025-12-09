@@ -1,38 +1,58 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import loginBg from "/src/assets/images/login_bg.jpg";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { IoEyeOutline } from "react-icons/io5";
+import { loginApi } from "../api/authApi"; // ✅ real API
+import { toast } from "react-hot-toast";
+import loginBg from "/src/assets/images/login_bg.jpg";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");       // keeps same UI field
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loggedIn = localStorage.getItem("loggedIn") === "true";
-    if (loggedIn) navigate("/", { replace: true });
-  }, [navigate]);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError("");
+  if (!username || !password) {
+    toast.error("Please enter username and password.");
+    return;
+  }
 
-    if (!email || !password) {
-      setError("Please enter email and password.");
-      return;
+  const toastId = toast.loading("Signing in...");
+
+  try {
+    const data = await loginApi({
+      username,
+      password,
+    });
+
+    localStorage.setItem("access_token", data.access_token);
+    localStorage.setItem("username", data.username);
+    localStorage.setItem("role", data.role);
+
+    toast.success("Login successful!", { id: toastId });
+
+    navigate("/", { replace: true });
+  } catch (err) {
+    const status = err.response?.status;
+
+    let message = "Server error. Please try again.";
+
+    if (status === 401) {
+      message = "Invalid username or password.";
+    } else if (status === 422) {
+      message = "Invalid login request.";
     }
 
-    if (email === "admin@falcongroup.com" && password === "Falcon@2025") {
-      localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("userEmail", email);
-      navigate("/", { replace: true });
-    } else {
-      setError("Invalid credentials. Please try again.");
-    }
-  };
+    toast.error(message, { id: toastId });
+    setError(message); // ✅ keeps inline error too (optional)
+  }
+};
+
 
   return (
     <div className="bg-white">
@@ -54,8 +74,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* ✅ Bottom-Centered Credit INSIDE Image Only */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-center text-[11px] text-gray-200">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-center text-[12px] text-gray-200">
             Developed by <span className="font-bold">Muhammed Mushraf</span> &{" "}
             <span className="font-bold">Ansil Rahman</span>
           </div>
@@ -79,20 +98,20 @@ export default function Login() {
 
             <div className="mt-8">
               <form onSubmit={handleSubmit}>
-                {/* Email */}
+                {/* Email field (acts as username) */}
                 <div>
                   <label
-                    htmlFor="email"
+                    htmlFor="username"
                     className="block mb-2 text-sm text-gray-600"
                   >
-                    Email Address
+                    Username
                   </label>
                   <input
-                    type="email"
-                    id="email"
-                    placeholder="admin@falcongroup.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text"
+                    id="username"
+                    placeholder="admin1"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md 
                       focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40"
                   />
@@ -120,30 +139,27 @@ export default function Login() {
                        focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40 pr-10"
                     />
 
-                    {/* Toggle Button */}
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3  text-gray-500 hover:text-gray-700 focus:outline-none"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
                     >
                       {showPassword ? <FaRegEyeSlash /> : <IoEyeOutline />}
                     </button>
                   </div>
                 </div>
 
-                {/* Error Message */}
                 {error && (
                   <p className="mt-4 text-sm text-red-500 text-center">
                     {error}
                   </p>
                 )}
 
-                {/* Submit Button */}
                 <div className="mt-6">
                   <button
                     type="submit"
                     className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform 
-                    bg-blue-500 rounded-md hover:bg-blue-400 focus:outline-none focus:bg-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-50"
+                    bg-blue-500 rounded-md hover:bg-blue-400 focus:outline-none focus:ring"
                   >
                     Sign In
                   </button>
