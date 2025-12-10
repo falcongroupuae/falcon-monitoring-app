@@ -30,12 +30,15 @@ export default function TopAppsPieChart({ filters }) {
           filters.startTime,
           "00:00:00"
         ),
-        end_date: buildDateTime(filters.endDate, filters.endTime, "23:59:59"),
+        end_date: buildDateTime(
+          filters.endDate,
+          filters.endTime,
+          "23:59:59"
+        ),
         department: filters.department || null,
         agent_code: filters.user || null,
         limit: 10,
       };
-
 
       const res = await getTopApps(queryParams);
 
@@ -58,19 +61,19 @@ export default function TopAppsPieChart({ filters }) {
     }
   };
 
-  // Loading view inside card
+  /* ✅ Loading view (dark-mode safe) */
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-56 bg-white rounded-xl shadow border">
-        <FaSpinner className="animate-spin text-gray-500 text-2xl" />
+      <div className="flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 transition-colors">
+        <FaSpinner className="animate-spin text-gray-500 dark:text-gray-400 text-2xl" />
       </div>
     );
   }
 
-  // Error view inside card
+  /* ✅ Error view (dark-mode safe) */
   if (hasError) {
     return (
-      <div className="flex items-center justify-center bg-white rounded-xl shadow border text-red-500 gap-2">
+      <div className="flex items-center justify-center h-56 bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 text-red-500 dark:text-red-400 gap-2 transition-colors">
         <FaExclamationTriangle className="text-xl" />
         <span>Error loading top apps</span>
       </div>

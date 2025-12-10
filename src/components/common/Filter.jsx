@@ -10,6 +10,7 @@ import {
 import { Listbox, Transition } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { getMetaDepartments, getMetaUsers } from "../../api/commonApi";
+import { toast } from "react-hot-toast";
 
 export default function Filter({ onApply }) {
   const [filters, setFilters] = useState({
@@ -153,6 +154,26 @@ export default function Filter({ onApply }) {
     </div>
   );
 
+  const handleApply = () => {
+    const start_dt = buildDateTime(
+      filters.startDate,
+      filters.startTime,
+      "00:00:00"
+    );
+    const end_dt = buildDateTime(
+      filters.endDate,
+      filters.endTime,
+      "23:59:59"
+    );
+
+    if (start_dt && end_dt && end_dt < start_dt) {
+      toast.error("End date/time cannot be before start date/time.");
+      return;
+    }
+
+    onApply(filters);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-300 dark:border-gray-700 p-6 mb-6">
       <div className="flex flex-wrap items-end gap-5 w-full">
@@ -252,7 +273,7 @@ export default function Filter({ onApply }) {
 
         <div className="flex items-center gap-3 ml-auto">
           <button
-            onClick={() => onApply(filters)}
+            onClick={handleApply}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md hover:shadow-lg transition-all"
           >
             <FaFilter /> Apply
