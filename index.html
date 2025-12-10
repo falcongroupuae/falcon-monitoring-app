@@ -5,8 +5,24 @@
     <link rel="icon" type="image/png" href="icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Falcon Monitoring</title>
+
+    <!-- ✅ Apply theme BEFORE first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        const isDark =
+          theme === "dark" ||
+          (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+        if (isDark) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
   </head>
-  <body>
+
+  <!-- ✅ BODY MUST NOT HAVE LIGHT-ONLY BACKGROUND -->
+  <body class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
